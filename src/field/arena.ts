@@ -161,6 +161,8 @@ export class Arena {
     }
     this.resetPlayerFaintCount();
     this.removeAllTags();
+    // Clear positional tags (Future Sight, Wish, etc.) to prevent them from carrying over to new battles
+    this.positionalTagManager.clearTags();
   }
 
   // #endregion
