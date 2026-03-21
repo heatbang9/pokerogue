@@ -1300,6 +1300,11 @@ class AttackTypeBoosterModifierTypeGenerator extends ModifierTypeGenerator {
           if (!move.is("AttackMove")) {
             continue;
           }
+          // Fixed-damage moves like Counter and Night Shade should not affect type booster item spawns
+          // since their damage is not affected by type boosters
+          if (move.hasAttr("FixedDamageAttr")) {
+            continue;
+          }
           // Account for variable type changing moves
           // Get a variable type attribute of the move
           const variableTypeAttr = move.getAttrs("VariableMoveTypeAttr")[0];
