@@ -481,7 +481,8 @@ export class GameChallengesUiHandler extends UiHandler {
 
     this.scrollCursor = scrollCursor;
 
-    this.setCursor(this.cursor);
+    // Removed unnecessary setCursor call that was causing cursor displacement
+    // Cursor position is already managed correctly in processInput
 
     return true;
   }
