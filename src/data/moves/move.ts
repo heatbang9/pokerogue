@@ -6738,7 +6738,10 @@ export class JawLockAttr extends AddBattlerTagAttr {
 
 export class CurseAttr extends MoveEffectAttr {
   apply(user: Pokemon, target: Pokemon, move: Move, _args: any[]): boolean {
-    if (user.getTypes(true).includes(PokemonType.GHOST)) {
+    // Check base types without Tera type - Curse should use the Pokemon's original type,
+    // not the Tera type from Terastallization. This differs from Protean/Libero which
+    // intentionally change the Pokemon's type before the move executes.
+    if (user.getTypes(false).includes(PokemonType.GHOST)) {
       if (target.getTag(BattlerTagType.CURSED)) {
         globalScene.phaseManager.queueMessage(i18next.t("battle:attackFailed"));
         return false;
