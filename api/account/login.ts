@@ -5,9 +5,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 import { createHash, randomBytes } from "crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { Errors, sendSuccess } from "../lib/errors";
-import { getUser, setSession } from "../lib/kv";
-import { sanitizeString } from "../lib/validation";
+import { Errors, sendSuccess } from "../../src/lib/errors";
+import { getUser, setSession } from "../../src/lib/kv";
+import { sanitizeString } from "../../src/lib/validation";
 
 function hashPassword(password: string, salt: string): string {
   return createHash("sha256")
