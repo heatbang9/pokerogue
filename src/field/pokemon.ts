@@ -6277,18 +6277,24 @@ export class PlayerPokemon extends Pokemon {
         newPokemon.fusionTeraType = this.fusionTeraType;
         newPokemon.usedTMs = this.usedTMs;
 
-        globalScene.getPlayerParty().push(newPokemon);
-        newPokemon.evolve(isFusion ? new FusionSpeciesFormEvolution(this.id, newEvolution) : newEvolution, evoSpecies);
-        const modifiers = globalScene.findModifiers(
-          m => m instanceof PokemonHeldItemModifier && m.pokemonId === this.id,
-          true,
-        ) as PokemonHeldItemModifier[];
-        modifiers.forEach(m => {
-          const clonedModifier = m.clone() as PokemonHeldItemModifier;
-          clonedModifier.pokemonId = newPokemon.id;
-          globalScene.addModifier(clonedModifier, true);
-        });
-        globalScene.updateModifiers(true);
+        // Check party size again before adding (handles edge cases like Training Session)
+        if (globalScene.getPlayerParty().length < 6) {
+          globalScene.getPlayerParty().push(newPokemon);
+          newPokemon.evolve(
+            isFusion ? new FusionSpeciesFormEvolution(this.id, newEvolution) : newEvolution,
+            evoSpecies,
+          );
+          const modifiers = globalScene.findModifiers(
+            m => m instanceof PokemonHeldItemModifier && m.pokemonId === this.id,
+            true,
+          ) as PokemonHeldItemModifier[];
+          modifiers.forEach(m => {
+            const clonedModifier = m.clone() as PokemonHeldItemModifier;
+            clonedModifier.pokemonId = newPokemon.id;
+            globalScene.addModifier(clonedModifier, true);
+          });
+          globalScene.updateModifiers(true);
+        }
       }
     }
   }
