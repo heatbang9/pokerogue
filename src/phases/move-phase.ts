@@ -27,7 +27,7 @@ import { StatusEffect } from "#enums/status-effect";
 import { MoveUsedEvent } from "#events/battle-scene";
 import type { Pokemon } from "#field/pokemon";
 import { applyMoveAttrs } from "#moves/apply-attrs";
-import { frenzyMissFunc } from "#moves/move-utils";
+import { frenzyMissFunc, getMoveTargets } from "#moves/move-utils";
 import type { PokemonMove } from "#moves/pokemon-move";
 import type { Move, PreUseInterruptAttr } from "#types/move-types";
 import type { TurnMove } from "#types/turn-move";
@@ -182,6 +182,13 @@ export class MovePhase extends PokemonPhase {
     // At this point, move's type changing and multi-target effects *should* be applied
     // Pokerogue's current implementation applies these effects during the move effect phase
     // as there is not (yet) a notion of a move-in-flight for determinations to occur
+
+    // Recalculate targets for moves with VariableTargetAttr to ensure terrain status is current
+    // This fixes issues like #4969 where Expanding Force should update targets based on terrain at move execution time
+    if (this.move.getMove().hasAttr("VariableTargetAttr")) {
+      const newTargets = getMoveTargets(user, this.move.moveId);
+      this.targets = newTargets.targets;
+    }
 
     this.resolveRedirectTarget();
     this.resolveCounterAttackTarget();

@@ -14,7 +14,7 @@ import { loggedInUser } from "#app/account";
 import { globalScene } from "#app/global-scene";
 import { getPokemonNameWithAffix } from "#app/messages";
 import type { EntryHazardTag, PendingHealTag } from "#data/arena-tag";
-import { WeakenMoveTypeTag } from "#data/arena-tag";
+import { MistTag, WeakenMoveTypeTag } from "#data/arena-tag";
 import { MoveChargeAnim } from "#data/battle-anims";
 import {
   CommandedTag,
@@ -7516,6 +7516,86 @@ export class ChillyReceptionAttr extends ForceSwitchOutAttr {
   }
 }
 
+/**
+ * Attribute for Parting Shot move.
+ * Lowers target's ATK and SPATK, then switches user out.
+ * The switch only occurs if the stat drops were not blocked by abilities.
+ * Stat drops still occur even if no eligible Pokemon to switch to.
+ */
+export class PartingShotAttr extends ForceSwitchOutAttr {
+  private statsToDrop: BattleStat[] = [Stat.ATK, Stat.SPATK];
+
+  constructor() {
+    super(true); // selfSwitch = true
+  }
+
+  apply(user: Pokemon, target: Pokemon, move: Move, args: any[]): boolean {
+    // Check if stat drops would be blocked by abilities or effects
+    // If blocked, don't switch out (the StatStageChangeAttr handles the actual stat changes)
+    if (this.wouldStatDropsBeBlocked(target)) {
+      return false;
+    }
+
+    // Call parent ForceSwitchOutAttr to handle the switch
+    return super.apply(user, target, move, args);
+  }
+
+  getCondition(): MoveConditionFunc {
+    // Parting Shot can be used if:
+    // 1. Stat drops would apply (target's stats can be lowered), OR
+    // 2. User can switch out (has eligible Pokemon)
+    // This matches the behavior from Pokemon Showdown replays
+    return (user, target, _move) => {
+      // Check if stat drops would be blocked
+      const statDropsBlocked = this.wouldStatDropsBeBlocked(target);
+
+      // If stat drops are blocked AND user can't switch, move fails
+      if (statDropsBlocked) {
+        return super.getSwitchOutCondition()(user, target, _move);
+      }
+
+      // Stat drops will apply, so move can be used
+      return true;
+    };
+  }
+
+  /**
+   * Check if stat drops would be blocked by abilities or other effects
+   */
+  private wouldStatDropsBeBlocked(target: Pokemon): boolean {
+    for (const stat of this.statsToDrop) {
+      const cancelled = new BooleanHolder(false);
+
+      // Check for Mist (arena tag)
+      globalScene.arena.applyTagsForSide(
+        MistTag,
+        target.isPlayer() ? ArenaTagSide.PLAYER : ArenaTagSide.ENEMY,
+        false,
+        null,
+        cancelled,
+      );
+
+      if (cancelled.value) {
+        return true;
+      }
+
+      // Check for abilities that protect stats (Clear Body, White Smoke, etc.)
+      applyAbAttrs("ProtectStatAbAttr", { pokemon: target, stat, cancelled, simulated: true });
+      applyAbAttrs("ConditionalUserFieldProtectStatAbAttr", { pokemon: target, stat, cancelled, simulated: true });
+      const ally = target.getAlly();
+      if (ally != null) {
+        applyAbAttrs("ConditionalUserFieldProtectStatAbAttr", { pokemon: ally, stat, cancelled, simulated: true });
+      }
+
+      if (cancelled.value) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
+
 export class RemoveTypeAttr extends MoveEffectAttr {
   // TODO: Remove the message callback
   private readonly removedType: PokemonType;
@@ -11255,7 +11335,7 @@ export function initMoves() {
       .target(MoveTarget.ALL_NEAR_ENEMIES),
     new StatusMove(MoveId.PARTING_SHOT, PokemonType.DARK, 100, 20, -1, 0, 6)
       .attr(StatStageChangeAttr, [Stat.ATK, Stat.SPATK], -1, false, { trigger: MoveEffectTrigger.PRE_APPLY })
-      .attr(ForceSwitchOutAttr, true)
+      .attr(PartingShotAttr)
       .soundBased()
       .reflectable(),
     new StatusMove(MoveId.TOPSY_TURVY, PokemonType.DARK, -1, 20, -1, 0, 6) //
