@@ -8,6 +8,7 @@
 
 import fs from "node:fs";
 import crypto_js from "crypto-js";
+import { program } from "commander";
 
 const { AES, enc } = crypto_js;
 
@@ -88,23 +89,6 @@ function decryptSave(path) {
   return convertSystemDataStr(AES.decrypt(fileData, SAVE_KEY).toString(enc.Utf8));
 }
 
-/* Print the usage message and exits */
-function printUsage() {
-  console.log(`
-Usage: node decrypt-save.js <encrypted-file> [save-file]
-
-Arguments:
-  file-path   Path to the encrypted save file to decrypt.
-  save-file   Path to where the decrypted data should be written. If not provided, the decrypted data will be printed to the console.
-
-Options:
-  -h, --help  Show this help message and exit.
-
-Description:
-  This script decrypts an encrypted pokerogue save file
-`);
-}
-
 /**
  * Write `data` to `filePath`, gracefully communicating errors that arise
  * @param {string} filePath
@@ -137,34 +121,31 @@ function writeToFile(filePath, data) {
 }
 
 function main() {
-  let args = process.argv.slice(2);
-  // Get options
-  const options = args.filter(arg => arg.startsWith("-"));
-  // get args
-  args = args.filter(arg => !arg.startsWith("-"));
+  program
+    .name("decrypt-save")
+    .description("Decrypt an encrypted pokerogue save file")
+    .version("1.0.0")
+    .argument("<file-path>", "Path to the encrypted save file to decrypt")
+    .argument("[save-file]", "Path to where the decrypted data should be written. If not provided, the decrypted data will be printed to the console.")
+    .action((filePath, saveFile) => {
+      // If the user provided a save file, check if it exists already and refuse to write to it.
+      if (saveFile && fs.existsSync(saveFile)) {
+        console.error(`Refusing to overwrite ${saveFile}`);
+        process.exit(1);
+      }
 
-  if (args.length === 0 || options.includes("-h") || options.includes("--help") || args.length > 2) {
-    printUsage();
-    process.exit(0);
-  }
-  // If the user provided a second argument, check if the file exists already and refuse to write to it.
-  if (args.length === 2) {
-    const destPath = args[1];
-    if (fs.existsSync(destPath)) {
-      console.error(`Refusing to overwrite ${destPath}`);
-      process.exit(1);
-    }
-  }
+      // Commence decryption.
+      const decrypt = decryptSave(filePath);
 
-  // Otherwise, commence decryption.
-  const decrypt = decryptSave(args[0]);
+      if (!saveFile) {
+        process.stdout.write(decrypt);
+        process.exit(0);
+      }
 
-  if (args.length === 1) {
-    process.stdout.write(decrypt);
-    process.exit(0);
-  }
+      writeToFile(saveFile, decrypt);
+    });
 
-  writeToFile(args[1], decrypt);
+  program.parse();
 }
 
 main();
