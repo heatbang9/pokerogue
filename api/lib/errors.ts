@@ -29,7 +29,7 @@ export interface ApiError {
   error: string;
   code: ErrorCode;
   statusCode: number;
-  details?: string;
+  details?: string | undefined;
   timestamp: string;
 }
 
