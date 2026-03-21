@@ -755,8 +755,20 @@ export class MovePhase extends PokemonPhase {
     const targets = this.getActiveTargetPokemon();
     const moveQueue = this.pokemon.getMoveQueue();
 
+    // For frenzy moves (Outrage, Thrash, Petal Dance, etc.), if the original target is no longer available,
+    // try to find a new random target instead of failing
+    if (targets.length === 0 && this.pokemon.getTag(BattlerTagType.FRENZY)) {
+      const opponents = this.pokemon.getOpponents(true);
+      if (opponents.length > 0) {
+        const newTarget = opponents[this.pokemon.randBattleSeedInt(opponents.length)];
+        this.targets = [newTarget.getBattlerIndex()];
+      }
+    }
+
+    const updatedTargets = this.getActiveTargetPokemon();
+
     if (
-      (targets.length === 0 && !this.move.getMove().hasAttr("AddArenaTrapTagAttr"))
+      (updatedTargets.length === 0 && !this.move.getMove().hasAttr("AddArenaTrapTagAttr"))
       || (moveQueue.length > 0 && moveQueue[0].move === MoveId.NONE)
     ) {
       this.showFailedText();
