@@ -227,6 +227,7 @@ export class BattleScene extends SceneBase {
   public experimentalSprites = false;
   public musicPreference: MusicPreference = MusicPreference.ALLGENS;
   public moveAnimations = true;
+  public weatherAnimations = true;
   public expGainsSpeed: ExpGainsSpeed = ExpGainsSpeed.DEFAULT;
   public skipSeenDialogues = false;
   /**
