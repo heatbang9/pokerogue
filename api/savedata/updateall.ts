@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSession, setSaveData, getUser, setUser } from '../_lib/kv';
+import { getSession, setSaveData, getUser, setUser } from '../lib/kv';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
