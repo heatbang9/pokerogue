@@ -32,7 +32,7 @@ describe("Moves - Expanding Force", () => {
   });
 
   it("should target single enemy when Psychic Terrain is not active", async () => {
-    await game.classicMode.startBattle([SpeciesId.GARDEVOIR, SpeciesId.BLISSEY]);
+    await game.classicMode.startBattle(SpeciesId.GARDEVOIR, SpeciesId.BLISSEY);
 
     const move = allMoves[MoveId.EXPANDING_FORCE];
 
@@ -45,15 +45,16 @@ describe("Moves - Expanding Force", () => {
 
   it("should target all enemies when Psychic Terrain is active and user is grounded", async () => {
     game.override.startingTerrain(TerrainType.PSYCHIC);
-    await game.classicMode.startBattle([SpeciesId.GARDEVOIR, SpeciesId.BLISSEY]);
+    await game.classicMode.startBattle(SpeciesId.GARDEVOIR, SpeciesId.BLISSEY);
 
     game.move.use(MoveId.EXPANDING_FORCE);
     await game.toEndOfTurn();
 
     // In double battle with Psychic Terrain, Expanding Force should hit both enemies
     // Check that damage was dealt to both enemy Pokemon
-    const enemy1 = game.field.getEnemyPokemon(0);
-    const enemy2 = game.field.getEnemyPokemon(1);
+    const enemyField = game.scene.getEnemyField();
+    const enemy1 = enemyField[0];
+    const enemy2 = enemyField[1];
 
     // Both enemies should have taken damage
     expect(enemy1.hp).toBeLessThan(enemy1.getMaxHp());
@@ -62,7 +63,7 @@ describe("Moves - Expanding Force", () => {
 
   it("should have 1.5x power when Psychic Terrain is active and user is grounded", async () => {
     game.override.startingTerrain(TerrainType.PSYCHIC);
-    await game.classicMode.startBattle([SpeciesId.GARDEVOIR, SpeciesId.BLISSEY]);
+    await game.classicMode.startBattle(SpeciesId.GARDEVOIR, SpeciesId.BLISSEY);
 
     const move = allMoves[MoveId.EXPANDING_FORCE];
     const powerSpy = vi.spyOn(move, "calculateBattlePower");
@@ -74,7 +75,7 @@ describe("Moves - Expanding Force", () => {
   });
 
   it("should have normal power when Psychic Terrain is not active", async () => {
-    await game.classicMode.startBattle([SpeciesId.GARDEVOIR, SpeciesId.BLISSEY]);
+    await game.classicMode.startBattle(SpeciesId.GARDEVOIR, SpeciesId.BLISSEY);
 
     const move = allMoves[MoveId.EXPANDING_FORCE];
     const powerSpy = vi.spyOn(move, "calculateBattlePower");
@@ -90,7 +91,7 @@ describe("Moves - Expanding Force", () => {
     // Use a Pokemon with Psychic Surge ability to activate terrain
     game.override.enemyAbility(AbilityId.PSYCHIC_SURGE).enemyMoveset([MoveId.SPLASH, MoveId.SPLASH]).enemyLevel(100);
 
-    await game.classicMode.startBattle([SpeciesId.GARDEVOIR, SpeciesId.BLISSEY]);
+    await game.classicMode.startBattle(SpeciesId.GARDEVOIR, SpeciesId.BLISSEY);
 
     // Player is slower, so will use Expanding Force after Psychic Terrain activates from ability
     game.override.startingLevel(50);
@@ -100,8 +101,9 @@ describe("Moves - Expanding Force", () => {
 
     // After Psychic Terrain activates from enemy's Psychic Surge, Expanding Force should target all enemies
     // Check that damage was dealt to both enemy Pokemon
-    const enemy1 = game.field.getEnemyPokemon(0);
-    const enemy2 = game.field.getEnemyPokemon(1);
+    const enemyField = game.scene.getEnemyField();
+    const enemy1 = enemyField[0];
+    const enemy2 = enemyField[1];
 
     // Both enemies should have taken damage (fix should make this pass)
     expect(enemy1.hp).toBeLessThan(enemy1.getMaxHp());
@@ -112,7 +114,7 @@ describe("Moves - Expanding Force", () => {
     game.override.startingTerrain(TerrainType.PSYCHIC);
     game.override.enemyAbility(AbilityId.ELECTRIC_SURGE).enemyMoveset([MoveId.SPLASH, MoveId.SPLASH]).enemyLevel(100);
 
-    await game.classicMode.startBattle([SpeciesId.GARDEVOIR, SpeciesId.BLISSEY]);
+    await game.classicMode.startBattle(SpeciesId.GARDEVOIR, SpeciesId.BLISSEY);
 
     // Player is slower, so will use Expanding Force after Electric Terrain replaces Psychic Terrain
     game.override.startingLevel(50);
@@ -122,8 +124,9 @@ describe("Moves - Expanding Force", () => {
 
     // After Electric Terrain replaces Psychic Terrain from enemy's Electric Surge, Expanding Force should target single enemy
     // So only one enemy should take damage
-    const enemy1 = game.field.getEnemyPokemon(0);
-    const enemy2 = game.field.getEnemyPokemon(1);
+    const enemyField = game.scene.getEnemyField();
+    const enemy1 = enemyField[0];
+    const enemy2 = enemyField[1];
 
     // Only one enemy should have taken damage (fix should make this pass)
     const enemy1Damage = enemy1.getMaxHp() - enemy1.hp;
