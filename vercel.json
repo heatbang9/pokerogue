@@ -2,10 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm install",
-  "functions": {
-    "api/**/*": {
-      "runtime": "nodejs22.x"
-    }
-  }
+  "installCommand": "npm install"
 }
