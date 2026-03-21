@@ -1297,7 +1297,8 @@ class AttackTypeBoosterModifierTypeGenerator extends ModifierTypeGenerator {
         }
         for (const pokemonMove of p.getMoveset()) {
           const move = pokemonMove.getMove();
-          if (!move.is("AttackMove")) {
+          // Skip non-attack moves and fixed damage moves (they don't benefit from type boosting items)
+          if (!move.is("AttackMove") || move.hasAttr("FixedDamageAttr")) {
             continue;
           }
           // Account for variable type changing moves
