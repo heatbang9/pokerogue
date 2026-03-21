@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 export const kv = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -12,6 +12,10 @@ export async function getUser(username: string) {
 
 export async function setUser(username: string, data: any) {
   return await kv.set(`user:${username}`, data);
+}
+
+export async function deleteUser(username: string) {
+  return await kv.del(`user:${username}`);
 }
 
 export async function getSession(sessionId: string) {
