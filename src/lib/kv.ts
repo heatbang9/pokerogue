@@ -1,8 +1,9 @@
 import { Redis } from "@upstash/redis";
 
+// Vercel KV uses these env vars: KV_REST_API_URL, KV_REST_API_TOKEN
 export const kv = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
 // Helper functions for common operations
