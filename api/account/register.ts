@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUser, setUser } from '../_lib/kv';
+import { getUser, setUser } from '../lib/kv';
 import { randomBytes, createHash } from 'crypto';
 
 function hashPassword(password: string, salt: string): string {
