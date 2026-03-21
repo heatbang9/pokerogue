@@ -22,7 +22,7 @@ describe("Moves - Baneful Bunker", () => {
 
     game.override
       .battleStyle("single")
-      .moveset([MoveId.SLASH, MoveId.FLASH_CANNON])
+      .moveset([MoveId.SLASH, MoveId.FLASH_CANNON, MoveId.SPORE])
       .enemySpecies(SpeciesId.TOXAPEX)
       .enemyAbility(AbilityId.INSOMNIA)
       .enemyMoveset(MoveId.BANEFUL_BUNKER)
@@ -68,5 +68,22 @@ describe("Moves - Baneful Bunker", () => {
 
     expect(toxapex.hp).toBe(toxapex.getMaxHp());
     expect(charizard.status?.effect).toBeUndefined();
+  });
+
+  it("should block status moves without poisoning attackers (issue #7008)", async () => {
+    await game.classicMode.startBattle(SpeciesId.CHARIZARD);
+
+    const charizard = game.field.getPlayerPokemon();
+    const toxapex = game.field.getEnemyPokemon();
+
+    game.move.select(MoveId.SPORE);
+    await game.phaseInterceptor.to("BerryPhase", false);
+
+    // Baneful Bunker should block Spore
+    expect(toxapex.hp).toBe(toxapex.getMaxHp());
+    // Spore doesn't make contact, so no poison
+    expect(charizard.status?.effect).toBeUndefined();
+    // Target should not be asleep
+    expect(toxapex.status?.effect).toBeUndefined();
   });
 });

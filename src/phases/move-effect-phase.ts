@@ -4,7 +4,14 @@ import { globalScene } from "#app/global-scene";
 import { getPokemonNameWithAffix } from "#app/messages";
 import { ConditionalProtectTag } from "#data/arena-tag";
 import { MoveAnim } from "#data/battle-anims";
-import { DamageProtectedTag, ProtectedTag, SemiInvulnerableTag, SubstituteTag, TypeBoostTag } from "#data/battler-tags";
+import {
+  ContactSetStatusProtectedTag,
+  DamageProtectedTag,
+  ProtectedTag,
+  SemiInvulnerableTag,
+  SubstituteTag,
+  TypeBoostTag,
+} from "#data/battler-tags";
 import { SpeciesFormChangePostMoveTrigger } from "#data/form-change-triggers";
 import type { TypeDamageMultiplier } from "#data/type";
 import { ArenaTagSide } from "#enums/arena-tag-side";
@@ -546,7 +553,8 @@ export class MoveEffectPhase extends PokemonPhase {
         || (target.findTags(t => t instanceof DamageProtectedTag).length === 0
           && target.findTags(t => t instanceof ProtectedTag).some(t => target.lapseTag(t.tagType)))
         || (this.move.category !== MoveCategory.STATUS
-          && target.findTags(t => t instanceof DamageProtectedTag).some(t => target.lapseTag(t.tagType))))
+          && target.findTags(t => t instanceof DamageProtectedTag).some(t => target.lapseTag(t.tagType)))
+        || target.findTags(t => t instanceof ContactSetStatusProtectedTag).some(t => target.lapseTag(t.tagType)))
     );
   }
 
