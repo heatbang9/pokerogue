@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getUser, setUser } from "../lib/kv";
+import { getUser, setUser } from "../_lib/kv";
 
 function hashPassword(password: string, salt: string): string {
   return createHash("sha256")
@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // For now, we need to find username from session
     // This is a simplified version - in production you'd verify the session
-    const { getSession } = await import("../lib/kv");
+    const { getSession } = await import("../_lib/kv");
     const sessionData = await getSession(authHeader);
     if (!sessionData || typeof sessionData !== "object") {
       return res.status(401).send("Invalid session");
