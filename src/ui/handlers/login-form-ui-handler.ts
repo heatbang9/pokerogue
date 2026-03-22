@@ -49,6 +49,8 @@ export class LoginFormUiHandler extends OAuthProvidersUiHandler {
         return i18next.t("menu:accountNonExistent");
       case ERR_PASSWORD_MATCH:
         return i18next.t("menu:unmatchingPassword");
+      case "Unknown login error!":
+        return i18next.t("menu:serverError");
     }
 
     return super.getReadableErrorMessage(error);
