@@ -47,6 +47,8 @@ export class ChangePasswordFormUiHandler extends FormModalUiHandler {
         return i18next.t("menu:accountNonExistent");
       case this.ERR_PASSWORD_MISMATCH:
         return i18next.t("menu:passwordNotMatchingConfirmPassword");
+      case "Unknown error!":
+        return i18next.t("menu:serverError");
     }
 
     return super.getReadableErrorMessage(error);

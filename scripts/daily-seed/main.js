@@ -12,9 +12,9 @@
 
 import { existsSync } from "fs";
 import { join } from "path";
+import { Command } from "@commander-js/extra-typings";
 import { select } from "@inquirer/prompts";
 import chalk from "chalk";
-import { getPropertyValue } from "../helpers/arguments.js";
 import { toTitleCase } from "../helpers/casing.js";
 import { promptOverwrite, writeFileSafe } from "../helpers/file.js";
 import { EDIT_OPTIONS } from "./constants.js";
@@ -26,7 +26,7 @@ import { promptStarters } from "./prompts/starter.js";
  * The version of this script
  * @type {string}
  */
-const SCRIPT_VERSION = "1.0.0";
+const SCRIPT_VERSION = "1.1.0";
 
 const rootDir = join(import.meta.dirname, "..", "..");
 
@@ -69,35 +69,34 @@ const editOptions = [...EDIT_OPTIONS];
 
 /** @typedef {typeof editOptions[number]} EditOption */
 
-/**
- * Run the `dailySeed:create` script.
- * @returns {Promise<void>}
- */
-async function main() {
-  // TODO: Add help text
-  console.group(chalk.grey(`🌱 Daily Seed Generator - v${SCRIPT_VERSION}\n`));
+const program = new Command("dailySeed:create")
+  .name("dailySeed:create")
+  .description("Interactive CLI to create a custom daily run seed")
+  .version(SCRIPT_VERSION)
+  .option("-e, --edit", "Start with editing an existing config")
+  .option("-o, --outfile <path>", "Output file path for the generated config (adds .json extension if not present)")
+  .action(async options => {
+    console.group(chalk.grey(`🌱 Daily Seed Generator - v${SCRIPT_VERSION}\n`));
 
-  if (process.argv.includes("--version") || process.argv.includes("-v")) {
-    return;
-  }
-
-  if (process.argv.includes("--edit") || process.argv.includes("-e")) {
-    const config = await promptEdit();
-    Object.assign(customSeedConfig, config);
-    editOptions.splice(editOptions.indexOf("edit"), 1);
-  }
-
-  try {
-    // `seed` is required
-    customSeedConfig.seed = await promptSeed();
-    await promptOptions();
-    if (process.exitCode != null) {
-      return;
+    if (options.edit) {
+      const config = await promptEdit();
+      Object.assign(customSeedConfig, config);
+      editOptions.splice(editOptions.indexOf("edit"), 1);
     }
-  } catch (err) {
-    console.error(chalk.red.bold("✗ Error: ", err));
-  }
-}
+
+    try {
+      // `seed` is required
+      customSeedConfig.seed = await promptSeed();
+      await promptOptions();
+      if (process.exitCode != null) {
+        return;
+      }
+
+      await finish(options.outfile);
+    } catch (err) {
+      console.error(chalk.red.bold("✗ Error: ", err));
+    }
+  });
 
 async function promptOptions() {
   const option = await select({
@@ -115,7 +114,6 @@ async function promptOptions() {
 async function handleAnswer(answer) {
   switch (answer) {
     case "finish":
-      await finish();
       return;
     case "edit": {
       const config = await promptEdit();
@@ -159,16 +157,14 @@ async function handleAnswer(answer) {
   await promptOptions();
 }
 
-const OUTFILE_ALIASES = /** @type {const} */ (["-o", "--outfile", "--outFile"]);
-
 /**
+ * @param {string | undefined} outFile
  * @returns {Promise<void>}
  */
-async function finish() {
+async function finish(outFile) {
   console.groupEnd();
   // TODO: do we also need to validate here?
 
-  const outFile = getPropertyValue(process.argv.slice(2), OUTFILE_ALIASES);
   if (outFile) {
     console.log(chalk.hex("#ffa500")(`Using outfile: ${chalk.blue(outFile)}`));
     await createOutputFile(outFile);
@@ -204,4 +200,4 @@ async function createOutputFile(outFile) {
   }
 }
 
-await main();
+program.parse();
