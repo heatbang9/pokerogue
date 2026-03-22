@@ -3538,12 +3538,24 @@ export class GrudgeTag extends SerializableBattlerTag {
     }
 
     // TODO: This should ideally retrieve the original PokemonMove from a move-in-flight object rather than querying move history
-    const lastMove = sourcePokemon.getLastNonVirtualMove();
+    // Get the last move including FOLLOW_UP moves (e.g., Copycat) to properly deduct PP from the calling move
+    const lastMove = sourcePokemon.getLastNonVirtualMove(false, false);
     if (!lastMove || lastMove.move === MoveId.STRUGGLE) {
       return false;
     }
 
-    const movesetMove = sourcePokemon.getMoveset().find(m => m.moveId === lastMove.move);
+    // If the last move was a FOLLOW_UP (move-calling move), we need to find the calling move
+    // to deduct PP from it instead of the called move
+    let targetMoveId = lastMove.move;
+    if (lastMove.useMode === MoveUseMode.FOLLOW_UP) {
+      // Get the move that called this FOLLOW_UP move (the actual move in the moveset)
+      const callingMove = sourcePokemon.getLastNonVirtualMove(false, true);
+      if (callingMove && callingMove.move !== MoveId.STRUGGLE) {
+        targetMoveId = callingMove.move;
+      }
+    }
+
+    const movesetMove = sourcePokemon.getMoveset().find(m => m.moveId === targetMoveId);
     if (!movesetMove) {
       return false;
     }
