@@ -4,8 +4,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 */
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { Errors, sendSuccess } from "../_lib/errors";
-import { getSession, getUser } from "../_lib/kv";
+import { Errors, sendSuccess } from "../_lib/errors.js";
+import { getSession, getUser } from "../_lib/kv.js";
 
 /**
  * Get user profile information
