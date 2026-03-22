@@ -109,7 +109,7 @@ export const FORCED_SIGNATURE_MOVES: Partial<Record<SpeciesId, MoveId | MoveId[]
     MoveId.WICKED_TORQUE,
     MoveId.BLAZING_TORQUE,
   ],
-  [SpeciesId.ROTOM]: [MoveId.BLIZZARD, MoveId.AIR_SLASH, MoveId.OVERHEAT, MoveId.HYDRO_PUMP, MoveId.LEAF_STORM],
+  [SpeciesId.ROTOM]: [MoveId.OVERHEAT, MoveId.AIR_SLASH, MoveId.BLIZZARD, MoveId.HYDRO_PUMP, MoveId.LEAF_STORM],
 
   // Regionals and whatnot
   [SpeciesId.ALOLA_MAROWAK]: MoveId.SHADOW_BONE,

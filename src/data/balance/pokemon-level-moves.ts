@@ -19286,7 +19286,7 @@ export const pokemonFormLevelMoves = {
       [ 55, MoveId.UPROAR ],
     ],
     2: [
-      [ 1, MoveId.HYDRO_PUMP ],
+      [ 1, MoveId.AIR_SLASH ],
       [ 1, MoveId.DOUBLE_TEAM ],
       [ 1, MoveId.ASTONISH ],
       [ 5, MoveId.THUNDER_SHOCK ],
@@ -19318,7 +19318,7 @@ export const pokemonFormLevelMoves = {
       [ 55, MoveId.UPROAR ],
     ],
     4: [
-      [ 1, MoveId.AIR_SLASH ],
+      [ 1, MoveId.HYDRO_PUMP ],
       [ 1, MoveId.DOUBLE_TEAM ],
       [ 1, MoveId.ASTONISH ],
       [ 5, MoveId.THUNDER_SHOCK ],
