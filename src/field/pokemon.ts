@@ -6223,6 +6223,9 @@ export class PlayerPokemon extends Pokemon {
           this.abilityIndex = 0;
         }
       }
+      // Clear custom types on evolution to allow new species' types to take effect
+      // Fixes issue where Weird Dream-transformed Pokemon retain incorrect types after evolution
+      this.customPokemonData.types = [];
       this.compatibleTms.splice(0, this.compatibleTms.length);
       this.generateCompatibleTms();
       const updateAndResolve = () => {
