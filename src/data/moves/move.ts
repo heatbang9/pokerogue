@@ -1111,6 +1111,10 @@ export abstract class Move implements Localizable {
 
     const typeChangeHolder = new NumberHolder(this.type);
 
+    // Apply variable type attributes (e.g., Hidden Power, Weather Ball)
+    applyMoveAttrs("VariableMoveTypeAttr", source, target, this, typeChangeHolder);
+
+    // Apply ability-based type changes (e.g., Refrigerate, Galvanize)
     applyAbAttrs("MoveTypeChangeAbAttr", {
       pokemon: source,
       opponent: target,

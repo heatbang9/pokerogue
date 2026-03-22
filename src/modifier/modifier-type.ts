@@ -1300,10 +1300,9 @@ class AttackTypeBoosterModifierTypeGenerator extends ModifierTypeGenerator {
           if (!move.is("AttackMove")) {
             continue;
           }
-          // Account for variable type changing moves
-          // Get a variable type attribute of the move
-          const variableTypeAttr = move.getAttrs("VariableMoveTypeAttr")[0];
-          const types = variableTypeAttr?.getTypesForItemSpawn(p, move) ?? [move.type];
+          // Account for variable type changing moves and abilities (e.g., Refrigerate, Galvanize)
+          // Use getMoveType to get the final type after all modifiers including abilities
+          const types = [p.getMoveType(move, true)];
           for (const type of types) {
             const currentWeight = attackMoveTypeWeights.get(type) ?? 0;
             if (currentWeight < 3) {
