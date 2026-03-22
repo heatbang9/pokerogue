@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getUser, setUser } from "../_lib/kv";
+import { getUser, setUser } from "../_lib/kv.js";
 
 function hashPassword(password: string, salt: string): string {
   return createHash("sha256")
