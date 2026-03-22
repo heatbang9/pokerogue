@@ -6,6 +6,7 @@ import { allMoves } from "#data/data-lists";
 import { Gender, getGenderSymbol } from "#data/gender";
 import { BiomeId } from "#enums/biome-id";
 import { MoveId } from "#enums/move-id";
+import { MysteryEncounterType } from "#enums/mystery-encounter-type";
 import { Nature } from "#enums/nature";
 import { PokeballType } from "#enums/pokeball";
 import { PokemonType } from "#enums/pokemon-type";
@@ -202,6 +203,10 @@ export class SpeciesEvolutionCondition {
 }
 
 export function validateShedinjaEvo(): boolean {
+  // Don't spawn Shedinja during Training Session (pokemon is temporarily removed from party)
+  if (globalScene.currentBattle?.mysteryEncounter?.type === MysteryEncounterType.TRAINING_SESSION) {
+    return false;
+  }
   return globalScene.getPlayerParty().length < 6 && globalScene.pokeballCounts[PokeballType.POKEBALL] > 0;
 }
 
