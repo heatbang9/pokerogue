@@ -46,6 +46,7 @@ describe("Moves - Roost", () => {
   test("Non flying type uses roost -> no type change, took damage", async () => {
     await game.classicMode.startBattle(SpeciesId.DUNSPARCE);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     const playerPokemonStartingHP = playerPokemon.hp;
     game.move.select(MoveId.ROOST);
     await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
@@ -70,6 +71,7 @@ describe("Moves - Roost", () => {
   test("Pure flying type -> becomes normal after roost and takes damage from ground moves -> regains flying", async () => {
     await game.classicMode.startBattle(SpeciesId.TORNADUS);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     const playerPokemonStartingHP = playerPokemon.hp;
     game.move.select(MoveId.ROOST);
     await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
@@ -94,6 +96,7 @@ describe("Moves - Roost", () => {
   test("Dual X/flying type -> becomes type X after roost and takes damage from ground moves -> regains flying", async () => {
     await game.classicMode.startBattle(SpeciesId.HAWLUCHA);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     const playerPokemonStartingHP = playerPokemon.hp;
     game.move.select(MoveId.ROOST);
     await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
@@ -119,6 +122,7 @@ describe("Moves - Roost", () => {
     game.override.starterForms({ [SpeciesId.ROTOM]: 4 }).ability(AbilityId.LEVITATE);
     await game.classicMode.startBattle(SpeciesId.ROTOM);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     const playerPokemonStartingHP = playerPokemon.hp;
     game.move.select(MoveId.ROOST);
     await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
@@ -132,9 +136,10 @@ describe("Moves - Roost", () => {
 
     await game.phaseInterceptor.to("TurnEndPhase");
 
-    // Should have lost HP and is now back to being electric/flying
+    // Should have healed HP (due to Roost) and is now back to being electric/flying
+    // Rotom has Levitate, so it doesn't take damage from Earthquake
     playerPokemonTypes = playerPokemon.getTypes();
-    expect(playerPokemon.hp).toBe(playerPokemonStartingHP);
+    expect(playerPokemon.hp).toBeGreaterThan(playerPokemonStartingHP);
     expect(playerPokemonTypes[0] === PokemonType.ELECTRIC).toBeTruthy();
     expect(playerPokemonTypes[1] === PokemonType.FLYING).toBeTruthy();
     expect(playerPokemon.isGrounded()).toBeFalsy();
@@ -143,6 +148,7 @@ describe("Moves - Roost", () => {
   test("A fire/flying type that uses burn up, then roost should be typeless until end of turn", async () => {
     await game.classicMode.startBattle(SpeciesId.MOLTRES);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     const playerPokemonStartingHP = playerPokemon.hp;
     game.move.select(MoveId.BURN_UP);
     await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
@@ -178,6 +184,7 @@ describe("Moves - Roost", () => {
     game.override.enemySpecies(SpeciesId.ZEKROM);
     await game.classicMode.startBattle(SpeciesId.ZAPDOS);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     const playerPokemonStartingHP = playerPokemon.hp;
     game.move.select(MoveId.DOUBLE_SHOCK);
     await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
@@ -218,6 +225,7 @@ describe("Moves - Roost", () => {
     ]);
     await game.classicMode.startBattle(SpeciesId.MOLTRES);
     const playerPokemon = game.field.getPlayerPokemon();
+    playerPokemon.hp = playerPokemon.getMaxHp() - 1;
     game.move.select(MoveId.ROOST);
     await game.phaseInterceptor.to("MoveEffectPhase");
 
@@ -284,5 +292,26 @@ describe("Moves - Roost", () => {
 
     expect(player).toHaveTypes([PokemonType.FLYING, type]);
     expect(player.isGrounded()).toBe(false);
+  });
+
+  test("should fail when used at full HP", async () => {
+    await game.classicMode.startBattle(SpeciesId.TORNADUS);
+    const playerPokemon = game.field.getPlayerPokemon();
+
+    // Pokemon is at full HP
+    expect(playerPokemon.isFullHp()).toBe(true);
+
+    game.move.select(MoveId.ROOST);
+    await game.setTurnOrder([BattlerIndex.PLAYER, BattlerIndex.ENEMY]);
+    await game.phaseInterceptor.to("MoveEndPhase");
+
+    // Roost should fail and NOT apply the RoostedTag
+    expect(playerPokemon.getTag(BattlerTagType.ROOSTED)).toBeUndefined();
+
+    // Should still be pure flying type (no type change)
+    const playerPokemonTypes = playerPokemon.getTypes();
+    expect(playerPokemonTypes[0]).toBe(PokemonType.FLYING);
+    expect(playerPokemonTypes.length).toBe(1);
+    expect(playerPokemon.isGrounded()).toBe(false);
   });
 });
