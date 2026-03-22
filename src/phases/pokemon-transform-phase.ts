@@ -3,6 +3,7 @@ import { getPokemonNameWithAffix } from "#app/messages";
 import type { BattlerIndex } from "#enums/battler-index";
 import { BattlerTagType } from "#enums/battler-tag-type";
 import { MoveId } from "#enums/move-id";
+import { PokemonType } from "#enums/pokemon-type";
 import { BATTLE_STATS, EFFECTIVE_STATS } from "#enums/stat";
 import { PokemonMove } from "#moves/pokemon-move";
 import { PokemonPhase } from "#phases/pokemon-phase";
@@ -59,8 +60,21 @@ export class PokemonTransformPhase extends PokemonPhase {
       return new PokemonMove(MoveId.NONE);
     });
 
-    // TODO: This should fallback to the target's original typing if none are left (from Burn Up, etc.)
-    user.summonData.types = target.getTypes();
+    // Copy target's types, fallback to original typing if target is typeless (e.g., from Burn Up)
+    const targetTypes = target.getTypes();
+    const isTypeless = targetTypes.length === 0 || (targetTypes.length === 1 && targetTypes[0] === PokemonType.UNKNOWN);
+
+    if (isTypeless) {
+      // Fallback to target's original typing from species form
+      const speciesForm = target.getSpeciesForm();
+      const originalTypes: PokemonType[] = [speciesForm.type1];
+      if (speciesForm.type2 && speciesForm.type2 !== PokemonType.UNKNOWN) {
+        originalTypes.push(speciesForm.type2);
+      }
+      user.summonData.types = originalTypes;
+    } else {
+      user.summonData.types = targetTypes;
+    }
 
     const promises = [user.updateInfo()];
 
