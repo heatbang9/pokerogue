@@ -57,10 +57,11 @@ export class LoginFormUiHandler extends OAuthProvidersUiHandler {
   public override getInputFieldConfigs(): InputFieldConfig[] {
     const inputFieldConfigs: InputFieldConfig[] = [];
     inputFieldConfigs.push(
-      { label: i18next.t("menu:username") },
+      { label: i18next.t("menu:username"), id: "login-username" },
       {
         label: i18next.t("menu:password"),
         isPassword: true,
+        id: "login-password",
       },
     );
     return inputFieldConfigs;
