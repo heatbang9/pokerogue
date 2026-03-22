@@ -1,3 +1,8 @@
+/*
+SPDX-FileCopyrightText: 2024-2026 Pagefault Games
+SPDX-License-Identifier: AGPL-3.0-only
+*/
+
 import { createHash, randomBytes } from "crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getUser, setUser } from "../../src/lib/kv";

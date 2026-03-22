@@ -57,6 +57,7 @@ module.exports = {
           "(^|/)tsconfig[.]json$", // TypeScript config
           "(^|/)(?:babel|webpack)[.]config[.](?:js|cjs|mjs|ts|cts|mts|json)$", // other configs
           "(^|/)test/.+[.]setup[.]ts", // Vitest setup files
+          "^src/lib/validation[.]ts$", // Used by API layer (not scanned by depcruise)
         ],
       },
       to: {},

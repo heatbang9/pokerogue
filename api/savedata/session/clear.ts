@@ -1,3 +1,8 @@
+/*
+SPDX-FileCopyrightText: 2024-2026 Pagefault Games
+SPDX-License-Identifier: AGPL-3.0-only
+*/
+
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSession, setSaveData } from "../../../src/lib/kv";
 

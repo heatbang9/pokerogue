@@ -7,8 +7,8 @@
 // Usage: node decrypt-save.js <encrypted-file> [save-file]
 
 import fs from "node:fs";
-import crypto_js from "crypto-js";
 import { program } from "commander";
+import crypto_js from "crypto-js";
 
 const { AES, enc } = crypto_js;
 
@@ -126,7 +126,10 @@ function main() {
     .description("Decrypt an encrypted pokerogue save file")
     .version("1.0.0")
     .argument("<file-path>", "Path to the encrypted save file to decrypt")
-    .argument("[save-file]", "Path to where the decrypted data should be written. If not provided, the decrypted data will be printed to the console.")
+    .argument(
+      "[save-file]",
+      "Path to where the decrypted data should be written. If not provided, the decrypted data will be printed to the console.",
+    )
     .action((filePath, saveFile) => {
       // If the user provided a save file, check if it exists already and refuse to write to it.
       if (saveFile && fs.existsSync(saveFile)) {
