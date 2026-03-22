@@ -103,6 +103,11 @@ export abstract class FormModalUiHandler extends ModalUiHandler {
         readOnly: isReadOnly ?? false,
       }).setOrigin(0);
 
+      // Set id attribute for testing accessibility
+      if (config?.id) {
+        (input.node as HTMLInputElement).id = config.id;
+      }
+
       inputContainer.add([inputBg, input]);
 
       this.inputContainers[f] = inputContainer;
@@ -222,4 +227,5 @@ export interface InputFieldConfig {
   label: string;
   isPassword?: boolean;
   isReadOnly?: boolean;
+  id?: string;
 }
