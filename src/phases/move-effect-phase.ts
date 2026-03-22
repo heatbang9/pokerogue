@@ -816,7 +816,8 @@ export class MoveEffectPhase extends PokemonPhase {
     applyAbAttrs("PostAttackAbAttr", { pokemon: user, opponent: target, move: this.move, hitResult, damage });
 
     // We assume only enemy Pokemon are able to have the EnemyAttackStatusEffectChanceModifier from tokens
-    if (!user.isPlayer() && this.move.is("AttackMove")) {
+    // Shield Dust (IgnoreMoveEffectsAbAttr) should block these token effects as they are additional move effects
+    if (!user.isPlayer() && this.move.is("AttackMove") && !target.hasAbilityWithAttr("IgnoreMoveEffectsAbAttr")) {
       globalScene.applyShuffledModifiers(EnemyAttackStatusEffectChanceModifier, false, target);
     }
 
