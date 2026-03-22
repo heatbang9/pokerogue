@@ -197,6 +197,20 @@ export class OverridesHelper extends GameManagerHelper {
   }
 
   /**
+   * Override the enemy pokemon's forms
+   * @param forms - The forms to set
+   * @returns `this`
+   */
+  public enemyForms(forms: Partial<Record<SpeciesId, number>>): this {
+    vi.spyOn(Overrides, "ENEMY_FORM_OVERRIDES", "get").mockReturnValue(forms);
+    const formsStr = Object.entries(forms)
+      .map(([speciesId, formIndex]) => `${SpeciesId[speciesId]}=${formIndex}`)
+      .join(", ");
+    this.log(`Enemy Pokemon form set to: ${formsStr}!`);
+    return this;
+  }
+
+  /**
    * Override the player's starting modifiers
    * @param modifiers - The modifiers to set
    * @returns `this`
