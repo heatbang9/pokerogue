@@ -1,5 +1,6 @@
 import { AbilityId } from "#enums/ability-id";
 import { BattlerIndex } from "#enums/battler-index";
+import { BattlerTagType } from "#enums/battler-tag-type";
 import { MoveId } from "#enums/move-id";
 import { SpeciesId } from "#enums/species-id";
 import { StatusEffect } from "#enums/status-effect";
@@ -137,5 +138,27 @@ describe("Moves - U-turn", () => {
     expect(logs).toContain("SwitchSummonPhase");
     expect(logs).toContain("FaintPhase");
     expect(logs.indexOf("SwitchSummonPhase")).toBeGreaterThan(logs.indexOf("FaintPhase"));
+  });
+
+  it("should force switch when hitting a substitute", async () => {
+    // Arrange: Set up enemy with substitute already active
+    game.override.enemyMoveset([MoveId.SPLASH]);
+    await game.classicMode.startBattle(SpeciesId.RAICHU, SpeciesId.SHUCKLE);
+
+    const enemy = game.field.getEnemyPokemon();
+    // Manually add substitute to enemy
+    enemy.addTag(BattlerTagType.SUBSTITUTE, 0, MoveId.NONE, enemy.id);
+
+    // Verify enemy has substitute
+    expect(enemy.getTag(BattlerTagType.SUBSTITUTE)).toBeDefined();
+
+    // Act: Use U-turn on substitute
+    game.move.select(MoveId.U_TURN);
+    game.doSelectPartyPokemon(1);
+    await game.toEndOfTurn();
+
+    // Assert: Player should have switched out even though U-turn hit substitute
+    expect(game.field.getPlayerPokemon().species.speciesId).toBe(SpeciesId.SHUCKLE);
+    expect(game.phaseInterceptor.log).toContain("SwitchSummonPhase");
   });
 });
