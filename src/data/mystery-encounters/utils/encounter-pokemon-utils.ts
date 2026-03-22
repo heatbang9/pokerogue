@@ -757,18 +757,11 @@ export async function catchPokemon(
                       form: pokemon.formIndex,
                       female: pokemon.gender === Gender.FEMALE,
                     };
-                    globalScene.ui.setOverlayMode(
-                      UiMode.POKEDEX_PAGE,
-                      pokemon.species,
-                      pokemon.formIndex,
-                      [attributes],
-                      null,
-                      () => {
-                        globalScene.ui.setMode(UiMode.MESSAGE).then(() => {
-                          promptRelease();
-                        });
-                      },
-                    );
+                    globalScene.ui.setOverlayMode(UiMode.POKEDEX_PAGE, pokemon.species, attributes, null, null, () => {
+                      globalScene.ui.setMode(UiMode.MESSAGE).then(() => {
+                        promptRelease();
+                      });
+                    });
                   },
                   () => {
                     globalScene.ui.setMode(
