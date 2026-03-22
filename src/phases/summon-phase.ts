@@ -195,6 +195,11 @@ export class SummonPhase extends PartyMemberPokemonPhase {
                 pokemon.cry(pokemon.getHpRatio() > 0.25 ? undefined : { rate: 0.85 });
                 pokemon.getSprite().clearTint();
                 pokemon.fieldSetup();
+                // Reset move history to fix Protect fail chance carrying over incorrectly (Issue #7001)
+                // Only reset when not loading from session to preserve move history for moves like Last Resort
+                if (!this.loaded) {
+                  pokemon.summonData.moveHistory = [];
+                }
                 // necessary to stay transformed during wild waves
                 if (pokemon.summonData.speciesForm) {
                   pokemon.loadAssets(false);
@@ -261,6 +266,11 @@ export class SummonPhase extends PartyMemberPokemonPhase {
         pokemon.cry(pokemon.getHpRatio() > 0.25 ? undefined : { rate: 0.85 });
         pokemon.getSprite().clearTint();
         pokemon.fieldSetup();
+        // Reset move history to fix Protect fail chance carrying over incorrectly (Issue #7001)
+        // Only reset when not loading from session to preserve move history for moves like Last Resort
+        if (!this.loaded) {
+          pokemon.summonData.moveHistory = [];
+        }
         globalScene.updateFieldScale();
         globalScene.time.delayedCall(1000, () => this.end());
       },
