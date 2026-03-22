@@ -19,7 +19,14 @@ import { runInteractive } from "./interactive.js";
 import { parseEggMoves } from "./parse.js";
 
 const version = "1.0.1";
-const program = new Command();
+const program = new Command()
+  .name("eggMoves:parse")
+  .description("Parse egg moves from CSV and generate TypeScript file")
+  .version(version)
+  .option("-f, --file <path>", "Input CSV file path")
+  .option("-t, --text <csv>", "CSV text input")
+  .option("-c, --console <csv>", "CSV text input (alias for --text)")
+  .option("-i, --interactive", "Run in interactive mode");
 
 // Get the directory name of the current module file
 const __filename = fileURLToPath(import.meta.url);
@@ -40,15 +47,7 @@ const eggMoveTargetPath = path.join(projectRoot, "src/data/balance/egg-moves.ts"
  * @returns {Promise<void>}
  */
 async function start() {
-  program
-    .name("eggMoves:parse")
-    .description("Parse egg moves from CSV and generate TypeScript file")
-    .version(version)
-    .option("-f, --file <path>", "Input CSV file path")
-    .option("-t, --text <csv>", "CSV text input")
-    .option("-c, --console <csv>", "CSV text input (alias for --text)")
-    .option("-i, --interactive", "Run in interactive mode")
-    .parse(process.argv);
+  program.parse(process.argv);
 
   console.log(chalk.yellow(`🥚 Egg Move Parser - v${version}`));
 
@@ -76,7 +75,7 @@ async function start() {
 
 /**
  * Handle the input method based on command options.
- * @param {Object} options - The parsed command options
+ * @param {{file?: string, text?: string, console?: string, interactive?: boolean}} options - The parsed command options
  * @returns {Promise<{type: "Console" | "File", value: string} | {type: "Exit"}>} The input method selected by the user
  */
 async function handleInput(options) {

@@ -28,7 +28,12 @@ import { fetchNames, INVALID_URL } from "./fetch-names.js";
 
 const version = "1.0.0";
 
-const program = new Command();
+const program = new Command()
+  .name("scrape-trainers")
+  .description("Scrape Bulbapedia for English trainer class names")
+  .version(version)
+  .argument("<trainer-classes...>", "Trainer class names to scrape")
+  .option("-o, --outfile <file>", "Output file path for the scraped data");
 
 /**
  * A large object mapping each "base" trainer name to a list of replacements.
@@ -43,13 +48,7 @@ const trainerNamesMap = {
 };
 
 async function main() {
-  program
-    .name("scrape-trainers")
-    .description("Scrape Bulbapedia for English trainer class names")
-    .version(version)
-    .argument("<trainer-classes...>", "Trainer class names to scrape")
-    .option("-o, --outfile <file>", "Output file path for the scraped data")
-    .parse(process.argv);
+  program.parse(process.argv);
 
   const options = program.opts();
   const trainerClasses = program.args;

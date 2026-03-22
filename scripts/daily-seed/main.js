@@ -38,7 +38,12 @@ import { promptStarters } from "./prompts/starter.js";
  */
 const SCRIPT_VERSION = "1.0.0";
 
-const program = new Command();
+const program = new Command()
+  .name("dailySeed:create")
+  .description("Interactive CLI to create a custom daily run seed")
+  .version(SCRIPT_VERSION, "-v, --version", "Output the current version")
+  .option("-e, --edit", "Edit an existing configuration")
+  .option("-o, --outfile <file>", "Output file path for the generated seed config");
 
 const rootDir = join(import.meta.dirname, "..", "..");
 
@@ -92,13 +97,7 @@ const editOptions = [...EDIT_OPTIONS];
  * @returns {Promise<void>}
  */
 async function main() {
-  program
-    .name("dailySeed:create")
-    .description("Interactive CLI to create a custom daily run seed")
-    .version(SCRIPT_VERSION, "-v, --version", "Output the current version")
-    .option("-e, --edit", "Edit an existing configuration")
-    .option("-o, --outfile <file>", "Output file path for the generated seed config")
-    .parse(process.argv);
+  program.parse(process.argv);
 
   const options = program.opts();
 
