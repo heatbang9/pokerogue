@@ -65,6 +65,6 @@
       ]
     }
   },
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "git submodule update --init --recursive && pnpm install",
   "forwardPorts": [8000]
 }
