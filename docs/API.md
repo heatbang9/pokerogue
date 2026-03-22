@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024-2026 Pagefault Games
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 # PokéRogue API Documentation
 
 ## Overview
