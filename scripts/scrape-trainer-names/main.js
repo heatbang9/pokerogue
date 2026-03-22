@@ -7,14 +7,13 @@
 
 import { format, inspect } from "node:util";
 import chalk from "chalk";
+import { program } from "commander";
 import { JSDOM } from "jsdom";
-import { getPropertyValue } from "../helpers/arguments.js";
 import { toCamelCase, toPascalSnakeCase, toTitleCase } from "../helpers/casing.js";
 import { writeFileSafe } from "../helpers/file.js";
 import { normalizeDiacritics } from "../helpers/strings.js";
 import { checkGenderAndType } from "./check-gender.js";
 import { fetchNames, INVALID_URL } from "./fetch-names.js";
-import { showHelpText } from "./help-message.js";
 
 /**
  * @packageDocumentation
@@ -27,7 +26,7 @@ import { showHelpText } from "./help-message.js";
  * @import { parsedNames } from "./types.js"
  */
 
-const version = "1.0.0";
+const version = "1.1.0";
 
 /**
  * A large object mapping each "base" trainer name to a list of replacements.
@@ -41,28 +40,21 @@ const trainerNamesMap = {
   gentleman: ["rich"],
 };
 
-const OUTFILE_ALIASES = /** @type {const} */ (["-o", "--outfile", "--outFile"]);
+program
+  .name("scrape-trainers")
+  .description("Scrape Bulbapedia for the English names of a given trainer class, outputting them as JSON")
+  .version(version)
+  .argument("<names...>", "The name of one or more trainer classes to parse")
+  .option(
+    "-o, --outfile <path>",
+    "The path to a file to save the output. If not provided, will send directly to stdout",
+  )
+  .action(async (names, options) => {
+    console.log(chalk.hex("#FF7F50")(`🍳 Trainer Name Scraper v${version}`));
 
-async function main() {
-  console.log(chalk.hex("#FF7F50")(`🍳 Trainer Name Scraper v${version}`));
-
-  const args = process.argv.slice(2);
-  const outFile = getPropertyValue(args, OUTFILE_ALIASES);
-  // Break out if no args remain
-  if (args.length === 0) {
-    console.error(
-      chalk.red.bold(
-        `✗ Error: No trainer classes provided!\nArgs: ${chalk.hex("#7310fdff")(process.argv.slice(2).join(", "))}`,
-      ),
-    );
-    showHelpText();
-    process.exitCode = 1;
-    return;
-  }
-
-  const output = await scrapeTrainerNames(args);
-  await tryWriteFile(outFile, output);
-}
+    const output = await scrapeTrainerNames(names);
+    await tryWriteFile(options.outfile, output);
+  });
 
 /**
  * Scrape the requested trainer names and format the resultant output.
@@ -242,4 +234,4 @@ async function tryWriteFile(outFile, output) {
   }
 }
 
-await main();
+program.parse();
