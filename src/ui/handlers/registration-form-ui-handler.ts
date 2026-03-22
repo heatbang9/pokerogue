@@ -50,14 +50,16 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
 
   public override getInputFieldConfigs(): InputFieldConfig[] {
     const inputFieldConfigs: InputFieldConfig[] = [];
-    inputFieldConfigs.push({ label: i18next.t("menu:username") });
+    inputFieldConfigs.push({ label: i18next.t("menu:username"), id: "register-username" });
     inputFieldConfigs.push({
       label: i18next.t("menu:password"),
       isPassword: true,
+      id: "register-password",
     });
     inputFieldConfigs.push({
       label: i18next.t("menu:confirmPassword"),
       isPassword: true,
+      id: "register-confirm-password",
     });
     return inputFieldConfigs;
   }
