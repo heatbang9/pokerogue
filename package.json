@@ -32,7 +32,7 @@
     "biome:ci": "biome ci --diagnostic-level=error --reporter=github --reporter=default --no-errors-on-unmatched",
     "typedoc": "typedoc",
     "depcruise": "depcruise src test",
-    "postinstall": "lefthook install 2>/dev/null || true; git config --local fetch.recurseSubmodules true 2>/dev/null || true; git config --local blame.ignoreRevsFile .git-blame-ignore-revs 2>/dev/null || true",
+    "postinstall": "lefthook install || true; git config --local fetch.recurseSubmodules true 2>/dev/null || true; git config --local blame.ignoreRevsFile .git-blame-ignore-revs 2>/dev/null || true",
     "update-version:patch": "pnpm version patch --force --no-git-tag-version",
     "update-version:minor": "pnpm version minor --force --no-git-tag-version",
     "update-locales": "pnpm update-submodules locales",
@@ -45,8 +45,6 @@
   },
   "dependencies": {
     "@material/material-color-utilities": "^0.3.0",
-    "@upstash/redis": "^1.37.0",
-    "@vercel/kv": "^3.0.0",
     "ajv": "^8.18.0",
     "compare-versions": "^6.1.1",
     "core-js": "^3.48.0",
@@ -67,7 +65,6 @@
     "@types/crypto-js": "^4.2.2",
     "@types/jsdom": "^28.0.0",
     "@types/node": "^24.11.0",
-    "@vercel/node": "^5.6.18",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/expect": "^4.0.18",
     "@vitest/utils": "^4.0.18",
@@ -96,7 +93,7 @@
     "octokit": "^5.0.5"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.9.0"
   },
   "packageManager": "pnpm@10.30.3"
 }
