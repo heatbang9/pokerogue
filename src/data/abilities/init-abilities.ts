@@ -1159,7 +1159,11 @@ export function initAbilities() {
       .edgeCase()
       .build(),
     new AbBuilder(AbilityId.FUR_COAT, 6) //
-      .attr(ReceivedMoveDamageMultiplierAbAttr, (_target, _user, move) => move.category === MoveCategory.PHYSICAL, 0.5)
+      .attr(
+        ReceivedMoveDamageMultiplierAbAttr,
+        (_target, _user, move) => move.category === MoveCategory.PHYSICAL || move.hasAttr("VariableDefAttr"),
+        0.5,
+      )
       .ignorable()
       .build(),
     new AbBuilder(AbilityId.MAGICIAN, 6) //
