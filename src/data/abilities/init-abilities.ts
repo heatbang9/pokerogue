@@ -2210,6 +2210,8 @@ const anticipationCondition: AbAttrCondition = (pokemon: Pokemon) =>
 /**
  * Condition function checking whether a move can have its type changed by an ability.
  * - Variable-type moves (e.g. {@linkcode MoveId.MULTI_ATTACK}) can't have their type changed.
+ * - Move-calling moves (e.g. {@linkcode MoveId.NATURE_POWER}, {@linkcode MoveId.METRONOME}) can't have their type changed
+ *   because they call other moves which should be affected by the ability instead.
  * - Tera-based moves can't have their type changed if the move's type would be changed due to the user being Terastallized.
  * @returns Whether the move can have its type changed by an ability
  * @remarks
@@ -2218,6 +2220,12 @@ const anticipationCondition: AbAttrCondition = (pokemon: Pokemon) =>
  */
 const anyTypeMoveConversionCondition: PokemonAttackCondition = (user, _target, move): boolean => {
   if (noAbilityTypeOverrideMoves.has(move.id)) {
+    return false;
+  }
+
+  // Move-calling moves should not have their type changed by abilities
+  // because they call other moves which should be affected instead
+  if (move.hasAttr("OverrideMoveEffectAttr")) {
     return false;
   }
 
