@@ -7,7 +7,6 @@
 import fs from "fs";
 import { input, select } from "@inquirer/prompts";
 import chalk from "chalk";
-import { showHelpText } from "./help-message.js";
 
 /**
  * @import { Option } from "./main.js"
@@ -18,20 +17,15 @@ import { showHelpText } from "./help-message.js";
  * @returns {Promise<Option>} The selected option with value
  */
 export async function runInteractive() {
-  /** @type {"Console" | "File" | "Help" | "Exit"} */
+  /** @type {"Console" | "File" | "Exit"} */
   const answer = await select({
     message: "Select the method to obtain egg moves.",
-    choices: ["Console", "File", "Help", "Exit"],
+    choices: ["Console", "File", "Exit"],
   });
 
   if (answer === "Exit") {
     console.log("Exiting...");
     process.exitCode = 0;
-    return { type: "Exit" };
-  }
-
-  if (answer === "Help") {
-    showHelpText();
     return { type: "Exit" };
   }
 
