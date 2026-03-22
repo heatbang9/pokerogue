@@ -36,6 +36,7 @@ describe("Moves - Parting Shot", () => {
     const initialEnemySpAtk = enemyPokemon.getStatStage(Stat.SPATK);
 
     game.move.use(MoveId.PARTING_SHOT);
+    game.doSelectPartyPokemon(1); // Select Charmander to switch in
     await game.toEndOfTurn();
 
     // Check stat drops
