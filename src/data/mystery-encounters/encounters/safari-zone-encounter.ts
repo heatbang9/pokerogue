@@ -566,11 +566,18 @@ async function doEndTurn(cursorIndex: number) {
     }
   } else {
     globalScene.phaseManager.queueMessage(getEncounterText(`${namespace}:safari.watching`) ?? "", 0, null, 1000);
-    initSubsequentOptionSelect({
-      overrideOptions: safariZoneGameOptions,
-      startingCursorIndex: cursorIndex,
-      hideDescription: true,
-    });
+    // Check if there are more safari pokemon remaining (fixes #6954)
+    if (encounter.misc.safariPokemonRemaining > 0) {
+      initSubsequentOptionSelect({
+        overrideOptions: safariZoneGameOptions,
+        startingCursorIndex: cursorIndex,
+        hideDescription: true,
+      });
+    } else {
+      // End safari mode when no pokemon remaining
+      encounter.continuousEncounter = false;
+      leaveEncounterWithoutBattle(true);
+    }
   }
 }
 
