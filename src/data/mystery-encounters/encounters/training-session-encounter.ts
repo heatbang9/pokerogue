@@ -279,6 +279,7 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
                   encounter.misc = {
                     playerPokemon: pokemon,
                     abilityIndex: index,
+                    isFusion: !!pokemon.getFusionSpeciesForm(),
                   };
                   return true;
                 },
@@ -317,8 +318,9 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
           queueEncounterMessage(`${namespace}:option.3.finished`);
           // Add the pokemon back to party with ability change
           const abilityIndex = encounter.misc.abilityIndex;
+          const isFusion = encounter.misc.isFusion;
 
-          if (playerPokemon.getFusionSpeciesForm()) {
+          if (isFusion) {
             playerPokemon.fusionAbilityIndex = abilityIndex;
 
             // Only update the fusion's dex data if the Pokemon is already caught in dex (ignore rentals)
