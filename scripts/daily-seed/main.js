@@ -12,9 +12,9 @@
 
 import { existsSync } from "fs";
 import { join } from "path";
+import { Command } from "@commander-js/extra-typings";
 import { select } from "@inquirer/prompts";
 import chalk from "chalk";
-import { getPropertyValue } from "../helpers/arguments.js";
 import { toTitleCase } from "../helpers/casing.js";
 import { promptOverwrite, writeFileSafe } from "../helpers/file.js";
 import { EDIT_OPTIONS } from "./constants.js";
@@ -27,6 +27,8 @@ import { promptStarters } from "./prompts/starter.js";
  * @type {string}
  */
 const SCRIPT_VERSION = "1.0.0";
+
+const program = new Command();
 
 const rootDir = join(import.meta.dirname, "..", "..");
 
@@ -74,14 +76,19 @@ const editOptions = [...EDIT_OPTIONS];
  * @returns {Promise<void>}
  */
 async function main() {
-  // TODO: Add help text
+  program
+    .name("dailySeed:create")
+    .description("Interactive CLI to create a custom daily run seed")
+    .version(SCRIPT_VERSION, "-v, --version", "Output the current version")
+    .option("-e, --edit", "Edit an existing configuration")
+    .option("-o, --outfile <file>", "Output file path for the generated seed config")
+    .parse(process.argv);
+
+  const options = program.opts();
+
   console.group(chalk.grey(`🌱 Daily Seed Generator - v${SCRIPT_VERSION}\n`));
 
-  if (process.argv.includes("--version") || process.argv.includes("-v")) {
-    return;
-  }
-
-  if (process.argv.includes("--edit") || process.argv.includes("-e")) {
+  if (options.edit) {
     const config = await promptEdit();
     Object.assign(customSeedConfig, config);
     editOptions.splice(editOptions.indexOf("edit"), 1);
@@ -159,8 +166,6 @@ async function handleAnswer(answer) {
   await promptOptions();
 }
 
-const OUTFILE_ALIASES = /** @type {const} */ (["-o", "--outfile", "--outFile"]);
-
 /**
  * @returns {Promise<void>}
  */
@@ -168,7 +173,8 @@ async function finish() {
   console.groupEnd();
   // TODO: do we also need to validate here?
 
-  const outFile = getPropertyValue(process.argv.slice(2), OUTFILE_ALIASES);
+  const options = program.opts();
+  const outFile = options.outfile;
   if (outFile) {
     console.log(chalk.hex("#ffa500")(`Using outfile: ${chalk.blue(outFile)}`));
     await createOutputFile(outFile);
