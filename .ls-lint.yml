@@ -34,4 +34,6 @@ ignore:
    - locales
    - dist
    - .devcontainer
+   - .vercel
+   - api
    - "LICENSES"
