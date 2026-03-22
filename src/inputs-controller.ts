@@ -327,6 +327,8 @@ export class InputsController {
     this.ensureKeyboardIsInit();
     const buttonDown = getButtonWithKeycode(this.getActiveConfig(Device.KEYBOARD)!, event.keyCode);
     if (buttonDown != null) {
+      // Prevent Firefox's "Search for text when you start typing" feature from interfering with game inputs
+      event.preventDefault();
       if (this.buttonLock.includes(buttonDown)) {
         return;
       }
