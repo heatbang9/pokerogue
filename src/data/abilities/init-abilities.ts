@@ -969,7 +969,11 @@ export function initAbilities() {
       .edgeCase() // Cannot recover berries used up by fling or natural gift (unimplemented)
       .build(),
     new AbBuilder(AbilityId.TELEPATHY, 5) //
-      .attr(MoveImmunityAbAttr, (pokemon, attacker, move) => pokemon.getAlly() === attacker && move.is("AttackMove"))
+      .attr(
+        MoveImmunityAbAttr,
+        (pokemon, attacker, move) =>
+          pokemon.getAlly() === attacker && (move.is("AttackMove") || move.id === MoveId.POLLEN_PUFF),
+      )
       .ignorable()
       .build(),
     new AbBuilder(AbilityId.MOODY, 5) //

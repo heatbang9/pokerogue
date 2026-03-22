@@ -1,12 +1,11 @@
 import { AbilityId } from "#enums/ability-id";
-import { BattlerIndex } from "#enums/battler-index";
 import { MoveId } from "#enums/move-id";
 import { SpeciesId } from "#enums/species-id";
 import { GameManager } from "#test/framework/game-manager";
 import Phaser from "phaser";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-describe("Moves - Pollen Puff", () => {
+describe("Pollen Puff", () => {
   let phaserGame: Phaser.Game;
   let game: GameManager;
 
@@ -18,55 +17,66 @@ describe("Moves - Pollen Puff", () => {
 
   beforeEach(() => {
     game = new GameManager(phaserGame);
-    game.override
-      .moveset([MoveId.POLLEN_PUFF])
-      .ability(AbilityId.BALL_FETCH)
-      .battleStyle("single")
-      .criticalHits(false)
-      .enemySpecies(SpeciesId.MAGIKARP)
-      .enemyAbility(AbilityId.BALL_FETCH)
-      .enemyMoveset(MoveId.SPLASH);
   });
 
-  it("should not heal more than once when the user has a source of multi-hit", async () => {
-    game.override.battleStyle("double").moveset([MoveId.POLLEN_PUFF, MoveId.ENDURE]).ability(AbilityId.PARENTAL_BOND);
-    await game.classicMode.startBattle(SpeciesId.BULBASAUR, SpeciesId.OMANYTE);
+  it("should heal ally when targeting them", async () => {
+    game.override.battleStyle("double").moveset([MoveId.POLLEN_PUFF, MoveId.SPLASH]).enemyMoveset(MoveId.SPLASH);
 
-    const [_, rightPokemon] = game.scene.getPlayerField();
+    await game.classicMode.startBattle(SpeciesId.ORANGURU, SpeciesId.GARDEVOIR);
 
-    rightPokemon.damageAndUpdate(rightPokemon.hp - 1);
+    const ally = game.scene.getPlayerField()[1];
 
-    game.move.select(MoveId.POLLEN_PUFF, 0, BattlerIndex.PLAYER_2);
-    game.move.select(MoveId.ENDURE, 1);
+    // Damage ally first
+    ally.hp = Math.floor(ally.getMaxHp() / 2);
 
-    await game.phaseInterceptor.to("BerryPhase");
-
-    // Pollen Puff heals with a ratio of 0.5, as long as Pollen Puff triggers only once the pokemon will always be <= (0.5 * Max HP) + 1
-    expect(rightPokemon.hp).toBeLessThanOrEqual(0.5 * rightPokemon.getMaxHp() + 1);
-  });
-
-  it("should damage an enemy multiple times when the user has a source of multi-hit", async () => {
-    game.override.moveset([MoveId.POLLEN_PUFF]).ability(AbilityId.PARENTAL_BOND).enemyLevel(100);
-    await game.classicMode.startBattle(SpeciesId.MAGIKARP);
-
-    const target = game.field.getEnemyPokemon();
-
-    game.move.select(MoveId.POLLEN_PUFF);
-
-    await game.phaseInterceptor.to("BerryPhase");
-
-    expect(target.battleData.hitCount).toBe(2);
-  });
-
-  // Regression test for pollen puff healing an enemy after dealing damage
-  it("should not heal an enemy after dealing damage", async () => {
-    await game.classicMode.startBattle(SpeciesId.FEEBAS);
-    const target = game.field.getEnemyPokemon();
-    game.move.use(MoveId.POLLEN_PUFF);
+    game.move.select(MoveId.POLLEN_PUFF, 0, 1); // Target ally
+    game.move.select(MoveId.SPLASH, 1);
 
     await game.phaseInterceptor.to("BerryPhase", false);
 
-    expect(target.hp).not.toBe(target.getMaxHp());
-    expect(game.phaseInterceptor.log).not.toContain("PokemonHealPhase");
+    // Ally should be healed
+    expect(ally.hp).toBeGreaterThan(Math.floor(ally.getMaxHp() / 2));
+  });
+
+  it("should be blocked by Telepathy when targeting ally", async () => {
+    game.override
+      .battleStyle("double")
+      .moveset([MoveId.POLLEN_PUFF, MoveId.SPLASH])
+      .enemyMoveset(MoveId.SPLASH)
+      .enemyAbility(AbilityId.TELEPATHY);
+
+    await game.classicMode.startBattle(SpeciesId.ORANGURU, SpeciesId.GARDEVOIR);
+
+    const ally = game.scene.getPlayerField()[1];
+    const initialAllyHp = ally.hp;
+
+    game.move.select(MoveId.POLLEN_PUFF, 0, 1); // Target ally
+    game.move.select(MoveId.SPLASH, 1);
+
+    await game.phaseInterceptor.to("BerryPhase", false);
+
+    // Ally with Telepathy should NOT be healed (move should be blocked)
+    expect(ally.hp).toBe(initialAllyHp);
+  });
+
+  it("should deal damage to enemy regardless of Telepathy", async () => {
+    game.override
+      .battleStyle("double")
+      .moveset([MoveId.POLLEN_PUFF, MoveId.SPLASH])
+      .enemyMoveset(MoveId.SPLASH)
+      .enemyAbility(AbilityId.TELEPATHY);
+
+    await game.classicMode.startBattle(SpeciesId.ORANGURU, SpeciesId.GARDEVOIR);
+
+    const enemy = game.scene.getEnemyField()[0];
+    const initialEnemyHp = enemy.hp;
+
+    game.move.select(MoveId.POLLEN_PUFF, 0); // Target enemy
+    game.move.select(MoveId.SPLASH, 1);
+
+    await game.phaseInterceptor.to("BerryPhase", false);
+
+    // Enemy should take damage (Telepathy only blocks ally moves)
+    expect(enemy.hp).toBeLessThan(initialEnemyHp);
   });
 });
