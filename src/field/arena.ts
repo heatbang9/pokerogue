@@ -161,6 +161,8 @@ export class Arena {
     }
     this.resetPlayerFaintCount();
     this.removeAllTags();
+    // Clear positional tags (e.g., Future Sight, Doom Desire) on arena reset (Issue #6480)
+    this.positionalTagManager.tags = [];
   }
 
   // #endregion
