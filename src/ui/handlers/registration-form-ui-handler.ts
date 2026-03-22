@@ -43,6 +43,8 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
         return i18next.t("menu:invalidRegisterPassword");
       case "failed to add account record":
         return i18next.t("menu:usernameAlreadyUsed");
+      case "Unknown registration error!":
+        return i18next.t("menu:serverError");
     }
 
     return super.getReadableErrorMessage(error);
