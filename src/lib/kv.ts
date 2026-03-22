@@ -1,7 +1,19 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
-// Re-export for convenience
-export { kv };
+// Initialize Redis client with Vercel KV environment variables
+const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+if (!redisUrl || !redisToken) {
+  console.error("Missing Redis environment variables!");
+  console.error("KV_REST_API_URL:", redisUrl ? "exists" : "missing");
+  console.error("KV_REST_API_TOKEN:", redisToken ? "exists" : "missing");
+}
+
+export const kv = new Redis({
+  url: redisUrl!,
+  token: redisToken!,
+});
 
 // Helper functions for common operations
 export async function getUser(username: string) {
