@@ -6,8 +6,8 @@
  */
 
 import { format, inspect } from "node:util";
+import { Command } from "@commander-js/extra-typings";
 import chalk from "chalk";
-import { program } from "commander";
 import { JSDOM } from "jsdom";
 import { toCamelCase, toPascalSnakeCase, toTitleCase } from "../helpers/casing.js";
 import { writeFileSafe } from "../helpers/file.js";
@@ -40,7 +40,7 @@ const trainerNamesMap = {
   gentleman: ["rich"],
 };
 
-program
+const program = new Command("scrape-trainers")
   .name("scrape-trainers")
   .description("Scrape Bulbapedia for the English names of a given trainer class, outputting them as JSON")
   .version(version)

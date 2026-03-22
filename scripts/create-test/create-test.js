@@ -12,8 +12,8 @@
 
 import fs from "node:fs";
 import { join } from "node:path";
+import { Command } from "@commander-js/extra-typings";
 import chalk from "chalk";
-import { program } from "commander";
 import { toKebabCase, toTitleCase } from "../helpers/casing.js";
 import { writeFileSafe } from "../helpers/file.js";
 import { cliAliases, validTestTypes } from "./constants.js";
@@ -41,7 +41,7 @@ for (const [type, aliases] of Object.entries(cliAliases)) {
   typeAliases[type] = [...aliases];
 }
 
-program
+const program = new Command("test:create")
   .name("test:create")
   .description("Create a test boilerplate file in the appropriate directory based on the type selected")
   .version(version)

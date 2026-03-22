@@ -13,8 +13,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { Command } from "@commander-js/extra-typings";
 import chalk from "chalk";
-import { program } from "commander";
 import { runInteractive } from "./interactive.js";
 import { parseEggMoves } from "./parse.js";
 
@@ -28,7 +28,7 @@ const templatePath = path.join(__dirname, "egg-move-template.boilerplate.ts");
 // TODO: Do we want this to be configurable?
 const eggMoveTargetPath = path.join(projectRoot, "src/data/balance/egg-moves.ts");
 
-program
+const program = new Command("eggMoves:parse")
   .name("eggMoves:parse")
   .description("Parse egg moves from CSV and write to a TypeScript file")
   .version(version)

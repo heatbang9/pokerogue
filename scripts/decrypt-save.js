@@ -7,7 +7,7 @@
 // Usage: node decrypt-save.js <encrypted-file> [save-file]
 
 import fs from "node:fs";
-import { program } from "commander";
+import { Command } from "@commander-js/extra-typings";
 import crypto_js from "crypto-js";
 
 const { AES, enc } = crypto_js;
@@ -120,7 +120,7 @@ function writeToFile(filePath, data) {
   }
 }
 
-program
+const program = new Command("decrypt-save")
   .name("decrypt-save")
   .description("Decrypt an encrypted pokerogue save file")
   .argument("<file-path>", "Path to the encrypted save file to decrypt")

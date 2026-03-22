@@ -12,9 +12,9 @@
 
 import { existsSync } from "fs";
 import { join } from "path";
+import { Command } from "@commander-js/extra-typings";
 import { select } from "@inquirer/prompts";
 import chalk from "chalk";
-import { program } from "commander";
 import { toTitleCase } from "../helpers/casing.js";
 import { promptOverwrite, writeFileSafe } from "../helpers/file.js";
 import { EDIT_OPTIONS } from "./constants.js";
@@ -69,7 +69,7 @@ const editOptions = [...EDIT_OPTIONS];
 
 /** @typedef {typeof editOptions[number]} EditOption */
 
-program
+const program = new Command("dailySeed:create")
   .name("dailySeed:create")
   .description("Interactive CLI to create a custom daily run seed")
   .version(SCRIPT_VERSION)
