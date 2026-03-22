@@ -492,12 +492,20 @@ export class TypeRequirement extends EncounterPokemonRequirement {
   excludeFainted: boolean;
   minNumberOfPokemon: number;
   invertQuery: boolean;
+  includeTeraType: boolean;
 
-  constructor(type: PokemonType | PokemonType[], excludeFainted = true, minNumberOfPokemon = 1, invertQuery = false) {
+  constructor(
+    type: PokemonType | PokemonType[],
+    excludeFainted = true,
+    minNumberOfPokemon = 1,
+    invertQuery = false,
+    includeTeraType = true,
+  ) {
     super();
     this.excludeFainted = excludeFainted;
     this.minNumberOfPokemon = minNumberOfPokemon;
     this.invertQuery = invertQuery;
+    this.includeTeraType = includeTeraType;
     this.requiredType = coerceArray(type);
   }
 
@@ -518,17 +526,17 @@ export class TypeRequirement extends EncounterPokemonRequirement {
   override queryParty(partyPokemon: PlayerPokemon[]): PlayerPokemon[] {
     if (!this.invertQuery) {
       return partyPokemon.filter(
-        pokemon => this.requiredType.filter(type => pokemon.getTypes().includes(type)).length > 0,
+        pokemon => this.requiredType.filter(type => pokemon.getTypes(this.includeTeraType).includes(type)).length > 0,
       );
     }
     // for an inverted query, we only want to get the pokemon that don't have ANY of the listed types
     return partyPokemon.filter(
-      pokemon => this.requiredType.filter(type => pokemon.getTypes().includes(type)).length === 0,
+      pokemon => this.requiredType.filter(type => pokemon.getTypes(this.includeTeraType).includes(type)).length === 0,
     );
   }
 
   override getDialogueToken(pokemon?: PlayerPokemon): [string, string] {
-    const includedTypes = this.requiredType.filter(ty => pokemon?.getTypes().includes(ty));
+    const includedTypes = this.requiredType.filter(ty => pokemon?.getTypes(this.includeTeraType).includes(ty));
     if (includedTypes.length > 0) {
       return ["type", PokemonType[includedTypes[0]]];
     }
