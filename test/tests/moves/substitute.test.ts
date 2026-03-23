@@ -519,4 +519,44 @@ describe("Moves - Substitute", () => {
     expect(player).toHaveFullHp();
     expect(player).toHaveHp(1);
   });
+
+  it("should be bypassed by Life Dew healing allies", async () => {
+    game.override
+      .battleStyle("double")
+      .moveset([MoveId.SPLASH, MoveId.SUBSTITUTE, MoveId.LIFE_DEW])
+      .enemyMoveset(MoveId.SPLASH);
+
+    await game.classicMode.startBattle(SpeciesId.BLASTOISE, SpeciesId.CHARIZARD);
+
+    const [, partnerPokemon] = game.scene.getPlayerField();
+
+    // Partner uses Substitute
+    game.move.select(MoveId.SUBSTITUTE, BattlerIndex.PLAYER_2);
+
+    // Lead uses Splash
+    game.move.select(MoveId.SPLASH, BattlerIndex.PLAYER);
+
+    await game.move.forceEnemyMove(MoveId.SPLASH);
+    await game.move.forceEnemyMove(MoveId.SPLASH);
+
+    await game.toNextTurn();
+
+    expect(partnerPokemon.getTag(BattlerTagType.SUBSTITUTE)).toBeDefined();
+
+    // Damage partner to make healing visible
+    partnerPokemon.hp = Math.floor(partnerPokemon.getMaxHp() * 0.5);
+
+    // Now use Life Dew to heal
+    game.move.select(MoveId.LIFE_DEW, BattlerIndex.PLAYER);
+    game.move.select(MoveId.SPLASH, BattlerIndex.PLAYER_2);
+
+    await game.move.forceEnemyMove(MoveId.SPLASH);
+    await game.move.forceEnemyMove(MoveId.SPLASH);
+
+    await game.toNextTurn();
+
+    // Partner should be healed despite having Substitute
+    expect(partnerPokemon.hp).toBeGreaterThan(partnerPokemon.getMaxHp() * 0.5);
+    expect(partnerPokemon.getTag(BattlerTagType.SUBSTITUTE)).toBeDefined();
+  });
 });
