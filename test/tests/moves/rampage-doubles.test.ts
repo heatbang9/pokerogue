@@ -57,6 +57,7 @@ describe("Rampage Moves - Double Battles", () => {
     game.override.enemyLevel(5).startingLevel(100);
 
     // Turn 2: Outrage continues - if enemy1 fainted, should target enemy2
+    // Note: Outrage should auto-select, but we still need to select for the second pokemon
     game.move.select(MoveId.SPLASH, 1);
     await game.toNextTurn();
 
@@ -80,6 +81,7 @@ describe("Rampage Moves - Double Battles", () => {
     await game.toNextTurn();
 
     // Turn 2: Outrage continues - should auto-target remaining enemy
+    // Note: Outrage auto-selects, only need to select for second pokemon
     game.move.select(MoveId.SPLASH, 1);
     await game.toNextTurn();
 
