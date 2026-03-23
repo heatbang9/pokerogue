@@ -12,12 +12,13 @@
 
 import fs from "node:fs";
 import { join } from "node:path";
+import { Command } from "@commander-js/extra-typings";
 import chalk from "chalk";
 import { toKebabCase, toTitleCase } from "../helpers/casing.js";
 import { writeFileSafe } from "../helpers/file.js";
 import { getFileName, getTestType } from "./cli.js";
+import { validTestTypes } from "./constants.js";
 import { getBoilerplatePath, getTestFileFullPath } from "./dirs.js";
-import { HELP_FLAGS, showHelpText } from "./help-message.js";
 
 /**
  * @import {testType} from "./constants.js"
@@ -29,6 +30,16 @@ const __dirname = import.meta.dirname;
 const projectRoot = join(__dirname, "..", "..");
 //#endregion
 
+//#region CLI Setup
+const program = new Command()
+  .name("pnpm test:create")
+  .description("Create a test boilerplate file in the appropriate directory based on the type selected")
+  .version(version)
+  .argument("[testType]", `The type/category of test file to create. Valid types: ${validTestTypes.join(", ")}`)
+  .argument("[fileName]", "The name of the test file to create")
+  .allowExcessArguments(false);
+//#endregion
+
 //#region Main
 
 /**
@@ -38,18 +49,15 @@ const projectRoot = join(__dirname, "..", "..");
 async function runInteractive() {
   console.group(chalk.grey(`🧪 Create Test - v${version}\n`));
 
-  const args = process.argv.slice(2);
+  program.parse();
+  const [testTypeArg, fileNameArg] = program.processedArgs;
 
-  if (HELP_FLAGS.some(h => args.includes(h))) {
-    return showHelpText();
-  }
-
-  const testType = await getTestType(args[0]);
+  const testType = await getTestType(testTypeArg);
   if (process.exitCode || !testType) {
     return;
   }
 
-  const fileNameAnswer = await getFileName(testType, args[1]);
+  const fileNameAnswer = await getFileName(testType, fileNameArg);
   if (process.exitCode || !fileNameAnswer) {
     return;
   }
