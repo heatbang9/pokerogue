@@ -797,19 +797,12 @@ async function handleOAuthCallback(
 
     // Check if user exists with this OAuth ID
     const oauthKey = `oauth:${provider}:${userInfo.id}`;
-    let existingUserId = await redis.get(oauthKey);
-    let user: UserData;
+    const existingUserId = await redis.get(oauthKey);
+    let user: UserData | null = existingUserId
+      ? ((await redis.get(`user:${existingUserId}`)) as UserData | null)
+      : null;
 
-    if (existingUserId) {
-      // User exists, fetch their data
-      user = (await redis.get(`user:${existingUserId}`)) as UserData;
-      if (!user) {
-        // User data missing, create new
-        existingUserId = null;
-      }
-    }
-
-    if (!existingUserId) {
+    if (!user) {
       // Check if username is taken
       const normalizedUsername = userInfo.username.toLowerCase();
       let finalUsername = normalizedUsername;
