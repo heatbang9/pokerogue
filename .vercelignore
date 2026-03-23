@@ -5,6 +5,7 @@ node_modules
 # Git
 .git
 .gitignore
+dist/.git
 
 # Testing
 test
