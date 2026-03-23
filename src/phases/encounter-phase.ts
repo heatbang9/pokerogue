@@ -456,7 +456,7 @@ export class EncounterPhase extends BattlePhase {
         let message = "";
         globalScene.executeWithSeedOffset(
           () => (message = randSeedItem(encounterMessages)),
-          globalScene.currentBattle.waveIndex,
+          globalScene.currentBattle.waveIndex + (trainer?.config.trainerType || 0) * 1000,
         );
         const showDialogueAndSummon = () => {
           globalScene.ui.showDialogue(message, trainer?.getName(TrainerSlot.NONE, true), null, () => {

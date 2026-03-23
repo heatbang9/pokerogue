@@ -69,7 +69,7 @@ export class TrainerVictoryPhase extends BattlePhase {
         let message: string;
         globalScene.executeWithSeedOffset(
           () => (message = randSeedItem(victoryMessages)),
-          globalScene.currentBattle.waveIndex,
+          globalScene.currentBattle.waveIndex + (globalScene.currentBattle.trainer?.config.trainerType || 0) * 1000,
         );
         message = message!; // tell TS compiler it's defined now
 
