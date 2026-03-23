@@ -21,6 +21,7 @@ import { MoveFlags } from "#enums/move-flags";
 import { MoveId } from "#enums/move-id";
 import { MovePhaseTimingModifier } from "#enums/move-phase-timing-modifier";
 import { MoveResult } from "#enums/move-result";
+import { MoveTarget } from "#enums/move-target";
 import { isIgnorePP, isIgnoreStatus, isReflected, isVirtual, MoveUseMode } from "#enums/move-use-mode";
 import { PokemonType } from "#enums/pokemon-type";
 import { StatusEffect } from "#enums/status-effect";
@@ -780,11 +781,24 @@ export class MovePhase extends PokemonPhase {
    */
   // TODO: The first part of this check seems already covered in `checkValidity`...
   protected resolveFinalPreMoveCancellationChecks(): boolean {
-    const targets = this.getActiveTargetPokemon();
+    let targets = this.getActiveTargetPokemon();
     const moveQueue = this.pokemon.getMoveQueue();
+    const move = this.move.getMove();
+
+    // For RANDOM_NEAR_ENEMY moves (e.g., Outrage, Thrash, Petal Dance),
+    // if the original target is no longer available, select a new random enemy.
+    // This fixes rampage moves failing in double battles when the initial target faints.
+    if (targets.length === 0 && move.moveTarget === MoveTarget.RANDOM_NEAR_ENEMY) {
+      const opponents = this.pokemon.getOpponents(true);
+      if (opponents.length > 0) {
+        const randomOpponent = opponents[this.pokemon.randBattleSeedInt(opponents.length)];
+        this.targets = [randomOpponent.getBattlerIndex()];
+        targets = [randomOpponent];
+      }
+    }
 
     if (
-      (targets.length === 0 && !this.move.getMove().hasAttr("AddArenaTrapTagAttr"))
+      (targets.length === 0 && !move.hasAttr("AddArenaTrapTagAttr"))
       || (moveQueue.length > 0 && moveQueue[0].move === MoveId.NONE)
     ) {
       this.showFailedText();
