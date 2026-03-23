@@ -45,7 +45,7 @@ import { ModifierTier } from "#enums/modifier-tier";
 import { MoveCategory } from "#enums/move-category";
 import { MoveId } from "#enums/move-id";
 import { PokemonType } from "#enums/pokemon-type";
-import type { SpeciesId } from "#enums/species-id";
+import { SpeciesId } from "#enums/species-id";
 import { Stat } from "#enums/stat";
 import { StatusEffect } from "#enums/status-effect";
 import { WeatherType } from "#enums/weather-type";
@@ -587,7 +587,22 @@ function forceSignatureMove(
     return;
   }
 
-  if (typeof forcedSignature === "number") {
+  // Handle form-exclusive signature moves for Rotom
+  // Rotom forms have different signature moves based on formIndex:
+  // formIndex 1: Heat Rotom → Overheat
+  // formIndex 2: Wash Rotom → Hydro Pump
+  // formIndex 3: Frost Rotom → Blizzard
+  // formIndex 4: Fan Rotom → Air Slash
+  // formIndex 5: Mow Rotom → Leaf Storm
+  if (speciesId === SpeciesId.ROTOM && Array.isArray(forcedSignature)) {
+    const formExclusiveMove = getRotomFormMove(pokemon.formIndex);
+    if (formExclusiveMove !== null && pool.has(formExclusiveMove) && doSignatureCoinFlip()) {
+      forcedSignature = formExclusiveMove;
+    } else {
+      // Normal Rotom (formIndex 0) or invalid form - no signature move
+      return;
+    }
+  } else if (typeof forcedSignature === "number") {
     if (!(pool.has(forcedSignature) && doSignatureCoinFlip())) {
       return;
     }
@@ -601,6 +616,28 @@ function forceSignatureMove(
 
   addToMoveset(forcedSignature, pokemon, pool, tmPool, eggPool, tmCount, eggMoveCount);
   return allMoves[forcedSignature];
+}
+
+/**
+ * Get the form-exclusive move for Rotom based on formIndex.
+ * @param formIndex - The form index of the Rotom
+ * @returns The MoveId of the form-exclusive move, or null if no exclusive move (Normal Rotom)
+ */
+function getRotomFormMove(formIndex: number): MoveId | null {
+  switch (formIndex) {
+    case 1:
+      return MoveId.OVERHEAT; // Heat Rotom
+    case 2:
+      return MoveId.HYDRO_PUMP; // Wash Rotom
+    case 3:
+      return MoveId.BLIZZARD; // Frost Rotom
+    case 4:
+      return MoveId.AIR_SLASH; // Fan Rotom
+    case 5:
+      return MoveId.LEAF_STORM; // Mow Rotom
+    default:
+      return null; // Normal Rotom or invalid form
+  }
 }
 
 /**
@@ -1194,6 +1231,7 @@ export const __INTERNAL_TEST_EXPORTS: {
   forceStabMove: typeof forceStabMove;
   filterRemainingTrainerMovePool: typeof filterRemainingTrainerMovePool;
   fillInRemainingMovesetSlots: typeof fillInRemainingMovesetSlots;
+  getRotomFormMove: typeof getRotomFormMove;
   forceLogging?: boolean;
 } = {} as any;
 

@@ -296,5 +296,27 @@ describe("Regression Tests - ai-moveset-gen.ts", () => {
       generateMoveset(pokemon);
       expect(pokemon.moveset).toHaveLength(4);
     });
+
+    describe("Rotom form-exclusive signature moves", () => {
+      const { getRotomFormMove } = __INTERNAL_TEST_EXPORTS;
+
+      it.each([
+        { formIndex: 1, expectedMove: MoveId.OVERHEAT, formName: "Heat Rotom" },
+        { formIndex: 2, expectedMove: MoveId.HYDRO_PUMP, formName: "Wash Rotom" },
+        { formIndex: 3, expectedMove: MoveId.BLIZZARD, formName: "Frost Rotom" },
+        { formIndex: 4, expectedMove: MoveId.AIR_SLASH, formName: "Fan Rotom" },
+        { formIndex: 5, expectedMove: MoveId.LEAF_STORM, formName: "Mow Rotom" },
+      ])("should return $expectedMove for $formName (formIndex $formIndex)", ({ formIndex, expectedMove }) => {
+        expect(getRotomFormMove(formIndex)).toBe(expectedMove);
+      });
+
+      it("should return null for Normal Rotom (formIndex 0)", () => {
+        expect(getRotomFormMove(0)).toBeNull();
+      });
+
+      it("should return null for invalid formIndex", () => {
+        expect(getRotomFormMove(999)).toBeNull();
+      });
+    });
   });
 });
