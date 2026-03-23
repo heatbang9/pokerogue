@@ -99,6 +99,10 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
         const encounter = globalScene.currentBattle.mysteryEncounter!;
         const playerPokemon: PlayerPokemon = encounter.misc.playerPokemon;
 
+        // Prevent evolution during training session to avoid party overflow issues (Issue #6976)
+        const wasPauseEvolutions = playerPokemon.pauseEvolutions;
+        playerPokemon.pauseEvolutions = true;
+
         // Spawn light training session with chosen pokemon
         // Every 50 waves, add +1 boss segment, capping at 5
         const segments = Math.min(2 + Math.floor(globalScene.currentBattle.waveIndex / 50), 5);
@@ -152,13 +156,18 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
             globalScene.gameData.setPokemonCaught(playerPokemon, false);
           }
 
-          // Add pokemon and mods back
-          globalScene.getPlayerParty().push(playerPokemon);
-          for (const mod of modifiers.value) {
-            mod.pokemonId = playerPokemon.id;
-            globalScene.addModifier(mod, true, false, false, true);
+          // Restore evolution pause state
+          playerPokemon.pauseEvolutions = wasPauseEvolutions;
+
+          // Add pokemon and mods back (only if party has room)
+          if (globalScene.getPlayerParty().length < 6) {
+            globalScene.getPlayerParty().push(playerPokemon);
+            for (const mod of modifiers.value) {
+              mod.pokemonId = playerPokemon.id;
+              globalScene.addModifier(mod, true, false, false, true);
+            }
+            globalScene.updateModifiers(true);
           }
-          globalScene.updateModifiers(true);
           queueEncounterMessage(`${namespace}:option.1.finished`);
         };
 
@@ -214,6 +223,10 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
         const encounter = globalScene.currentBattle.mysteryEncounter!;
         const playerPokemon: PlayerPokemon = encounter.misc.playerPokemon;
 
+        // Prevent evolution during training session to avoid party overflow issues (Issue #6976)
+        const wasPauseEvolutions = playerPokemon.pauseEvolutions;
+        playerPokemon.pauseEvolutions = true;
+
         // Spawn medium training session with chosen pokemon
         // Every 40 waves, add +1 boss segment, capping at 6
         const segments = Math.min(2 + Math.floor(globalScene.currentBattle.waveIndex / 40), 6);
@@ -227,13 +240,18 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
           playerPokemon.setCustomNature(encounter.misc.chosenNature);
           globalScene.gameData.unlockSpeciesNature(playerPokemon.species, encounter.misc.chosenNature);
 
-          // Add pokemon and modifiers back
-          globalScene.getPlayerParty().push(playerPokemon);
-          for (const mod of modifiers.value) {
-            mod.pokemonId = playerPokemon.id;
-            globalScene.addModifier(mod, true, false, false, true);
+          // Restore evolution pause state
+          playerPokemon.pauseEvolutions = wasPauseEvolutions;
+
+          // Add pokemon and modifiers back (only if party has room)
+          if (globalScene.getPlayerParty().length < 6) {
+            globalScene.getPlayerParty().push(playerPokemon);
+            for (const mod of modifiers.value) {
+              mod.pokemonId = playerPokemon.id;
+              globalScene.addModifier(mod, true, false, false, true);
+            }
+            globalScene.updateModifiers(true);
           }
-          globalScene.updateModifiers(true);
         };
 
         setEncounterRewards({ fillRemaining: true }, undefined, onBeforeRewardsPhase);
@@ -304,6 +322,10 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
         const encounter = globalScene.currentBattle.mysteryEncounter!;
         const playerPokemon: PlayerPokemon = encounter.misc.playerPokemon;
 
+        // Prevent evolution during training session to avoid party overflow issues (Issue #6976)
+        const wasPauseEvolutions = playerPokemon.pauseEvolutions;
+        playerPokemon.pauseEvolutions = true;
+
         // Spawn hard training session with chosen pokemon
         // Every 30 waves, add +1 boss segment, capping at 6
         // Also starts with +1 to all stats
@@ -340,13 +362,18 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
           playerPokemon.calculateStats();
           globalScene.gameData.setPokemonCaught(playerPokemon, false);
 
-          // Add pokemon and mods back
-          globalScene.getPlayerParty().push(playerPokemon);
-          for (const mod of modifiers.value) {
-            mod.pokemonId = playerPokemon.id;
-            globalScene.addModifier(mod, true, false, false, true);
+          // Restore evolution pause state
+          playerPokemon.pauseEvolutions = wasPauseEvolutions;
+
+          // Add pokemon and mods back (only if party has room)
+          if (globalScene.getPlayerParty().length < 6) {
+            globalScene.getPlayerParty().push(playerPokemon);
+            for (const mod of modifiers.value) {
+              mod.pokemonId = playerPokemon.id;
+              globalScene.addModifier(mod, true, false, false, true);
+            }
+            globalScene.updateModifiers(true);
           }
-          globalScene.updateModifiers(true);
         };
 
         setEncounterRewards({ fillRemaining: true }, undefined, onBeforeRewardsPhase);
