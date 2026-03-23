@@ -1,9 +1,4 @@
 {
   "outputDirectory": "dist",
-  "framework": "vite",
-  "functions": {
-    "api/auth/*.ts": {
-      "runtime": "nodejs22.x"
-    }
-  }
+  "framework": "vite"
 }

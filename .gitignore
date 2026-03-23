@@ -48,3 +48,4 @@ coverage
 *.csv
 .vercel/
 .vercel
+.env.vercel
