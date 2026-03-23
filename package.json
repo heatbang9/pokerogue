@@ -32,7 +32,7 @@
     "biome:ci": "biome ci --diagnostic-level=error --reporter=github --reporter=default --no-errors-on-unmatched",
     "typedoc": "typedoc",
     "depcruise": "depcruise src test",
-    "postinstall": "lefthook install; git config --local fetch.recurseSubmodules true; git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
+    "postinstall": "lefthook install 2>/dev/null || true; git config --local fetch.recurseSubmodules true 2>/dev/null || true; git config --local blame.ignoreRevsFile .git-blame-ignore-revs 2>/dev/null || true",
     "update-version:patch": "pnpm version patch --force --no-git-tag-version",
     "update-version:minor": "pnpm version minor --force --no-git-tag-version",
     "update-locales": "pnpm update-submodules locales",
