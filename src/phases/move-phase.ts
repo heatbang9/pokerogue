@@ -752,8 +752,29 @@ export class MovePhase extends PokemonPhase {
    */
   // TODO: The first part of this check seems already covered in `checkValidity`...
   protected resolveFinalPreMoveCancellationChecks(): boolean {
-    const targets = this.getActiveTargetPokemon();
+    let targets = this.getActiveTargetPokemon();
     const moveQueue = this.pokemon.getMoveQueue();
+
+    // Handle frenzy moves when original target is KO'd - retarget to remaining opponent
+    if (
+      targets.length === 0
+      && this.pokemon.getTag(BattlerTagType.FRENZY)
+      && moveQueue.length > 0
+      && !this.move.getMove().hasAttr("AddArenaTrapTagAttr")
+    ) {
+      const opponents = this.pokemon.getOpponents(true);
+      if (opponents.length > 0) {
+        // Retarget to the first available opponent
+        const newTarget = opponents[0].getBattlerIndex();
+        this.targets = [newTarget];
+        // Update the move queue entry's targets for future turns
+        const queueEntry = moveQueue[0];
+        if (queueEntry?.targets) {
+          queueEntry.targets = [newTarget];
+        }
+        targets = this.getActiveTargetPokemon();
+      }
+    }
 
     if (
       (targets.length === 0 && !this.move.getMove().hasAttr("AddArenaTrapTagAttr"))
