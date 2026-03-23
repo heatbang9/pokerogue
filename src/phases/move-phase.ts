@@ -27,7 +27,7 @@ import { StatusEffect } from "#enums/status-effect";
 import { MoveUsedEvent } from "#events/battle-scene";
 import type { Pokemon } from "#field/pokemon";
 import { applyMoveAttrs } from "#moves/apply-attrs";
-import { frenzyMissFunc } from "#moves/move-utils";
+import { frenzyMissFunc, getMoveTargets } from "#moves/move-utils";
 import type { PokemonMove } from "#moves/pokemon-move";
 import type { Move, PreUseInterruptAttr } from "#types/move-types";
 import type { TurnMove } from "#types/turn-move";
@@ -180,9 +180,9 @@ export class MovePhase extends PokemonPhase {
     }
 
     // At this point, move's type changing and multi-target effects *should* be applied
-    // Pokerogue's current implementation applies these effects during the move effect phase
-    // as there is not (yet) a notion of a move-in-flight for determinations to occur
-
+    // We re-evaluate variable targets here to account for terrain changes since move selection
+    // (e.g., Expanding Force's target depends on Psychic Terrain being active at execution time)
+    this.resolveVariableTarget();
     this.resolveRedirectTarget();
     this.resolveCounterAttackTarget();
 
@@ -634,6 +634,31 @@ export class MovePhase extends PokemonPhase {
     targets[0] = targetHolder.value;
     if (targetHolder.value === BattlerIndex.ATTACKER) {
       this.fail();
+    }
+  }
+
+  /**
+   * Re-evaluate targets for moves with `VariableTargetAttr` based on current terrain status.
+   *
+   * This is needed because terrain status can change between move selection and execution,
+   * affecting moves like Expanding Force which change from single-target to multi-target
+   * based on Psychic Terrain.
+   *
+   * @see {@link https://github.com/pagefaultgames/pokerogue/issues/4969 | Issue #4969}
+   */
+  protected resolveVariableTarget(): void {
+    const move = this.move.getMove();
+    if (!move.hasAttr("VariableTargetAttr")) {
+      return;
+    }
+
+    // Re-evaluate targets based on current terrain
+    const moveTargets = getMoveTargets(this.pokemon, move.id);
+
+    // Only update targets if the move is now multi-target
+    // For single-target moves, keep the originally selected target
+    if (moveTargets.multiple) {
+      this.targets = moveTargets.targets;
     }
   }
 
