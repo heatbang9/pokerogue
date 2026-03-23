@@ -1252,6 +1252,7 @@ if (IS_TEST) {
     forceStabMove,
     filterRemainingTrainerMovePool,
     fillInRemainingMovesetSlots,
+    getRotomFormMove,
     forceLogging: false,
   });
 }
