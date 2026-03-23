@@ -230,8 +230,8 @@ const turnEndPhases: readonly PhaseString[] = [
   "WeatherEffectPhase",
   "PositionalTagPhase",
   "BerryPhase",
-  "CheckStatusEffectPhase",
   "TurnEndPhase",
+  "CheckStatusEffectPhase",
 ] as const;
 
 /**
