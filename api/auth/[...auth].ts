@@ -707,23 +707,172 @@ async function handleLeaderboard(req: VercelRequest, res: VercelResponse, redis:
 async function handleOAuthCallback(
   req: VercelRequest,
   res: VercelResponse,
-  _redis: Redis,
+  redis: Redis,
   provider: string,
 ): Promise<void> {
   const { code } = req.query;
 
-  if (!code) {
+  if (!code || typeof code !== "string") {
     res.status(400).json({ error: "Authorization code required" });
     return;
   }
 
-  // OAuth callback handling would go here
-  // For now, return a placeholder response
-  res.status(200).json({
-    success: false,
-    error: "OAuth not fully configured",
-    provider,
-  });
+  try {
+    let userInfo: { id: string; username: string; email?: string };
+
+    if (provider === "discord") {
+      // Exchange code for access token
+      const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: process.env.DISCORD_CLIENT_ID || "",
+          client_secret: process.env.DISCORD_CLIENT_SECRET || "",
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:8000"}/api/auth/discord/callback`,
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error("Failed to exchange Discord code");
+      }
+
+      const tokenData = await tokenResponse.json();
+
+      // Get user info
+      const userResponse = await fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch Discord user info");
+      }
+
+      const userData = await userResponse.json();
+      userInfo = {
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+      };
+    } else if (provider === "google") {
+      // Exchange code for access token
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: process.env.GOOGLE_CLIENT_ID || "",
+          client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:8000"}/api/auth/google/callback`,
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error("Failed to exchange Google code");
+      }
+
+      const tokenData = await tokenResponse.json();
+
+      // Get user info
+      const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch Google user info");
+      }
+
+      const userData = await userResponse.json();
+      userInfo = {
+        id: userData.id,
+        username: userData.name || userData.email.split("@")[0],
+        email: userData.email,
+      };
+    } else {
+      res.status(400).json({ error: "Invalid OAuth provider" });
+      return;
+    }
+
+    // Check if user exists with this OAuth ID
+    const oauthKey = `oauth:${provider}:${userInfo.id}`;
+    let existingUserId = await redis.get(oauthKey);
+    let user: UserData;
+
+    if (existingUserId) {
+      // User exists, fetch their data
+      user = (await redis.get(`user:${existingUserId}`)) as UserData;
+      if (!user) {
+        // User data missing, create new
+        existingUserId = null;
+      }
+    }
+
+    if (!existingUserId) {
+      // Check if username is taken
+      const normalizedUsername = userInfo.username.toLowerCase();
+      let finalUsername = normalizedUsername;
+      let counter = 1;
+
+      while (await redis.get(`user:${finalUsername}`)) {
+        finalUsername = `${normalizedUsername}${counter}`;
+        counter++;
+      }
+
+      // Create new user
+      const now = Date.now();
+      user = {
+        id: generateToken(),
+        username: finalUsername,
+        password: "", // No password for OAuth users
+        salt: "",
+        email: userInfo.email?.toLowerCase() || null,
+        createdAt: now,
+        lastLogin: now,
+        stats: {
+          gamesPlayed: 0,
+          wins: 0,
+          highestWave: 0,
+          totalPokemonCaught: 0,
+          totalTrainersDefeated: 0,
+        },
+      };
+
+      await redis.set(`user:${finalUsername}`, user);
+      await redis.set(oauthKey, finalUsername);
+    }
+
+    // Update last login
+    user.lastLogin = Date.now();
+    await redis.set(`user:${user.username}`, user);
+
+    // Create session
+    const sessionToken = generateToken();
+    const now = Date.now();
+    await redis.set(
+      `session:${sessionToken}`,
+      { userId: user.id, username: user.username, createdAt: now, expiresAt: now + 7 * 24 * 60 * 60 * 1000 },
+      { ex: 7 * 24 * 60 * 60 },
+    );
+
+    const existingSessions = ((await redis.get<string[]>(`user-sessions:${user.username}`)) || []) as string[];
+    const updatedSessions = [...existingSessions, sessionToken].slice(-10);
+    await redis.set(`user-sessions:${user.username}`, updatedSessions);
+
+    // Set session cookie
+    res.setHeader(
+      "Set-Cookie",
+      `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,
+    );
+
+    // Redirect to main app
+    const redirectUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:8000";
+    res.redirect(302, redirectUrl);
+  } catch (error) {
+    console.error(`${provider} OAuth error:`, error);
+    res.status(500).json({ error: `${provider} authentication failed` });
+  }
 }
 
 // ============================================================================
