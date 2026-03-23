@@ -25,9 +25,9 @@ import { IS_TEST, isBeta, isDev } from "#constants/app-constants";
 import { allMoves } from "#data/data-lists";
 import { ModifierTier } from "#enums/modifier-tier";
 import { MoveCategory } from "#enums/move-category";
-import type { MoveId } from "#enums/move-id";
+import { MoveId } from "#enums/move-id";
 import { PokemonType } from "#enums/pokemon-type";
-import type { SpeciesId } from "#enums/species-id";
+import { SpeciesId } from "#enums/species-id";
 import { Stat } from "#enums/stat";
 import type { EnemyPokemon, Pokemon } from "#field/pokemon";
 import { PokemonMove } from "#moves/pokemon-move";
@@ -470,6 +470,29 @@ function filterPool(
  * Forcibly add a STAB move to the Pokémon's moveset from the provided pools
  *
  * @remarks
+/**
+ * Get the form-exclusive move for Rotom based on its form index.
+ * @param formIndex - The form index of the Rotom
+ * @returns The MoveId of the form-exclusive move, or undefined for normal Rotom
+ */
+function getRotomFormMove(formIndex: number): MoveId | undefined {
+  switch (formIndex) {
+    case 1:
+      return MoveId.OVERHEAT; // Heat Rotom
+    case 2:
+      return MoveId.HYDRO_PUMP; // Wash Rotom
+    case 3:
+      return MoveId.BLIZZARD; // Frost Rotom
+    case 4:
+      return MoveId.AIR_SLASH; // Fan Rotom
+    case 5:
+      return MoveId.LEAF_STORM; // Mow Rotom
+    default:
+      return; // Normal Rotom has no form-exclusive move
+  }
+}
+
+/**
  * If no STAB move is available, add any damaging move.
  * If no damaging move is available, no move is added
  * @param pool - The master move pool
@@ -650,6 +673,15 @@ function debugMoveWeights(pokemon: Pokemon, pool: Map<MoveId, number>, note: str
  */
 export function generateMoveset(pokemon: Pokemon): void {
   pokemon.moveset = [];
+
+  // Handle Rotom form-exclusive moves
+  if (pokemon.species.speciesId === SpeciesId.ROTOM) {
+    const formMove = getRotomFormMove(pokemon.formIndex);
+    if (formMove !== undefined) {
+      pokemon.moveset.push(new PokemonMove(formMove));
+    }
+  }
+
   // Step 1: Generate the pools from various sources: level up, egg moves, and TMs
   const learnPool = getAndWeightLevelMoves(pokemon);
   debugMoveWeights(pokemon, learnPool, "Initial Level Moves");

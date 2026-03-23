@@ -4,7 +4,7 @@ import {
   GREAT_TIER_TM_LEVEL_REQUIREMENT,
   ULTRA_TIER_TM_LEVEL_REQUIREMENT,
 } from "#balance/moveset-generation";
-import { allMoves, allSpecies } from "#data/data-lists";
+import { allMoves } from "#data/data-lists";
 import { MoveId } from "#enums/move-id";
 import { SpeciesId } from "#enums/species-id";
 import { TrainerSlot } from "#enums/trainer-slot";
@@ -12,8 +12,7 @@ import { EnemyPokemon } from "#field/pokemon";
 import { GameManager } from "#test/framework/game-manager";
 import { NumberHolder } from "#utils/common";
 import { getPokemonSpecies } from "#utils/pokemon-utils";
-import { afterEach } from "node:test";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
  * Parameters for {@linkcode createTestablePokemon}
@@ -49,13 +48,15 @@ function createTestablePokemon(
   species: SpeciesId,
   { level, trainerSlot = TrainerSlot.NONE, boss = false, formIndex = 0 }: MockPokemonParams,
 ): EnemyPokemon {
-  const pokemon = new EnemyPokemon(allSpecies[species], level, trainerSlot, boss);
+  const pokemon = new EnemyPokemon(getPokemonSpecies(species), level, trainerSlot, boss);
+  // Always set formIndex explicitly to override any default from the constructor
+  const speciesData = getPokemonSpecies(species);
+  const formIndexLength = speciesData?.forms.length;
+  const name = speciesData?.name;
   if (formIndex !== 0) {
-    const formIndexLength = getPokemonSpecies(species)?.forms.length;
-    const name = allSpecies[species]?.name;
     expect(formIndex, `${name} does not have a form with index ${formIndex}`).toBeLessThan(formIndexLength);
-    pokemon.formIndex = formIndex;
   }
+  pokemon.formIndex = formIndex;
 
   return pokemon;
 }
@@ -282,6 +283,45 @@ describe("Regression Tests - ai-moveset-gen.ts", () => {
   });
 
   describe("generateMoveset", () => {
+    describe("Rotom form-exclusive moves", () => {
+      it.each([
+        [1, MoveId.OVERHEAT, "Heat Rotom"],
+        [2, MoveId.HYDRO_PUMP, "Wash Rotom"],
+        [3, MoveId.BLIZZARD, "Frost Rotom"],
+        [4, MoveId.AIR_SLASH, "Fan Rotom"],
+        [5, MoveId.LEAF_STORM, "Mow Rotom"],
+      ])("should generate $3 with form-exclusive move", (formIndex: number, expectedMove: MoveId, _formName: string) => {
+        pokemon = createTestablePokemon(SpeciesId.ROTOM, { level: 50, formIndex });
+        // Debug: check that formIndex is set correctly
+        expect(pokemon.formIndex).toBe(formIndex);
+        expect(pokemon.species.speciesId).toBe(SpeciesId.ROTOM);
+        generateMoveset(pokemon);
+        expect(pokemon.moveset[0].moveId).toBe(expectedMove);
+      });
+
+      it("should not force a form-exclusive move for normal Rotom (formIndex 0)", () => {
+        pokemon = createTestablePokemon(SpeciesId.ROTOM, { level: 50, formIndex: 0 });
+        // Verify formIndex is 0
+        expect(pokemon.formIndex).toBe(0);
+        vi.spyOn(pokemon, "getLevelMoves").mockReturnValue([
+          [1, MoveId.THUNDER_SHOCK],
+          [1, MoveId.DOUBLE_TEAM],
+          [1, MoveId.ASTONISH],
+          [5, MoveId.CONFUSE_RAY],
+        ]);
+        generateMoveset(pokemon);
+        // Normal Rotom should not have any of the form-exclusive moves
+        const formExclusiveMoves = [
+          MoveId.OVERHEAT,
+          MoveId.HYDRO_PUMP,
+          MoveId.BLIZZARD,
+          MoveId.AIR_SLASH,
+          MoveId.LEAF_STORM,
+        ];
+        expect(pokemon.moveset[0].moveId).not.toBeOneOf(formExclusiveMoves);
+      });
+    });
+
     it("should spawn with 4 moves if possible", async () => {
       // Create a pokemon that can learn at least 4 moves
       pokemon = createTestablePokemon(SpeciesId.ROCKRUFF, { level: 15 });

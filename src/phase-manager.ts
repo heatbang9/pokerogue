@@ -229,9 +229,9 @@ export type PhaseConstructorMap = typeof PHASES;
 const turnEndPhases: readonly PhaseString[] = [
   "WeatherEffectPhase",
   "PositionalTagPhase",
+  "TurnEndPhase",
   "BerryPhase",
   "CheckStatusEffectPhase",
-  "TurnEndPhase",
 ] as const;
 
 /**
