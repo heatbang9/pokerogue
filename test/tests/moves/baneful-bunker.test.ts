@@ -69,4 +69,20 @@ describe("Moves - Baneful Bunker", () => {
     expect(toxapex.hp).toBe(toxapex.getMaxHp());
     expect(charizard.status?.effect).toBeUndefined();
   });
+
+  it("should block status moves like Spore without poisoning attackers", async () => {
+    game.override.moveset([MoveId.SPORE]);
+
+    await game.classicMode.startBattle(SpeciesId.CHARIZARD);
+
+    const charizard = game.field.getPlayerPokemon();
+    const toxapex = game.field.getEnemyPokemon();
+
+    game.move.select(MoveId.SPORE);
+    await game.phaseInterceptor.to("BerryPhase", false);
+
+    expect(toxapex.hp).toBe(toxapex.getMaxHp());
+    expect(toxapex.status?.effect).toBeUndefined();
+    expect(charizard.status?.effect).toBeUndefined();
+  });
 });

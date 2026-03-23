@@ -545,8 +545,7 @@ export class MoveEffectPhase extends PokemonPhase {
       && (hasConditionalProtectApplied.value
         || (target.findTags(t => t instanceof DamageProtectedTag).length === 0
           && target.findTags(t => t instanceof ProtectedTag).some(t => target.lapseTag(t.tagType)))
-        || (this.move.category !== MoveCategory.STATUS
-          && target.findTags(t => t instanceof DamageProtectedTag).some(t => target.lapseTag(t.tagType))))
+        || target.findTags(t => t instanceof DamageProtectedTag).some(t => target.lapseTag(t.tagType)))
     );
   }
 
