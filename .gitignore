@@ -40,6 +40,9 @@ src/data/battle-anim-data.ts
 
 coverage
 
+# Vercel
+.vercel
+
 # Local Documentation
 /typedoc
 /dependency-graph.svg
