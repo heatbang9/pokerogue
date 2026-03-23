@@ -1,47 +1,4 @@
 {
   "outputDirectory": "dist",
-  "framework": "vite",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@4"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/account/login",
-      "destination": "/api/auth/login"
-    },
-    {
-      "source": "/account/register",
-      "destination": "/api/auth/register"
-    },
-    {
-      "source": "/account/info",
-      "destination": "/api/auth/me"
-    },
-    {
-      "source": "/account/logout",
-      "destination": "/api/auth/logout"
-    },
-    {
-      "source": "/account/changepw",
-      "destination": "/api/auth/change-password"
-    },
-    {
-      "source": "/account/profile",
-      "destination": "/api/auth/profile"
-    },
-    {
-      "source": "/account/sessions",
-      "destination": "/api/auth/sessions"
-    },
-    {
-      "source": "/account/stats",
-      "destination": "/api/auth/stats"
-    },
-    {
-      "source": "/account/leaderboard",
-      "destination": "/api/auth/leaderboard"
-    }
-  ]
+  "framework": "vite"
 }
