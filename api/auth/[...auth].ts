@@ -744,8 +744,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const redis = getRedis();
 
   // Parse the path to determine the action
-  const slug = req.query.slug as string[] | undefined;
-  const action = Array.isArray(slug) ? slug[0] : slug || "me";
+  const auth = req.query.auth as string[] | undefined;
+  const action = Array.isArray(auth) ? auth[0] : auth || "me";
 
   try {
     switch (action) {
@@ -768,12 +768,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case "leaderboard":
         return await handleLeaderboard(req, res, redis);
       case "discord":
-        if (slug?.[1] === "callback") {
+        if (auth?.[1] === "callback") {
           return await handleOAuthCallback(req, res, redis, "discord");
         }
         break;
       case "google":
-        if (slug?.[1] === "callback") {
+        if (auth?.[1] === "callback") {
           return await handleOAuthCallback(req, res, redis, "google");
         }
         break;
