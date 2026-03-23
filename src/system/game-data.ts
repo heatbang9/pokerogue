@@ -555,6 +555,68 @@ export class GameData {
     return true;
   }
 
+  private sessionCheckInterval?: number;
+  private lastSessionCheckTime = 0;
+  private readonly SESSION_CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  private readonly SESSION_CHECK_THROTTLE_MS = 30 * 1000; // 30 seconds
+
+  /**
+   * Starts periodic session validation to detect out-of-date sessions early
+   * This helps prevent the "crash" feeling when switching between devices
+   */
+  public startPeriodicSessionCheck(): void {
+    if (bypassLogin || this.sessionCheckInterval) {
+      return;
+    }
+
+    // Check session validity every 5 minutes
+    this.sessionCheckInterval = window.setInterval(() => {
+      this.checkSessionValidity();
+    }, this.SESSION_CHECK_INTERVAL_MS);
+
+    console.log("[SessionCheck] Started periodic session validation");
+  }
+
+  /**
+   * Stops periodic session validation
+   */
+  public stopPeriodicSessionCheck(): void {
+    if (this.sessionCheckInterval) {
+      window.clearInterval(this.sessionCheckInterval);
+      this.sessionCheckInterval = undefined;
+      console.log("[SessionCheck] Stopped periodic session validation");
+    }
+  }
+
+  /**
+   * Checks if the current session is still valid
+   * Throttled to prevent excessive API calls
+   */
+  public async checkSessionValidity(): Promise<boolean> {
+    // Throttle checks
+    const now = Date.now();
+    if (now - this.lastSessionCheckTime < this.SESSION_CHECK_THROTTLE_MS) {
+      return true;
+    }
+    this.lastSessionCheckTime = now;
+
+    // Don't check during active gameplay (battle, animation, etc.)
+    if (globalScene.phaseManager?.hasActivePhases()) {
+      console.log("[SessionCheck] Skipping check - active gameplay in progress");
+      return true;
+    }
+
+    console.log("[SessionCheck] Checking session validity...");
+    const isValid = await this.verify();
+
+    if (!isValid) {
+      console.warn("[SessionCheck] Session is out of date - reload triggered");
+      this.stopPeriodicSessionCheck();
+    }
+
+    return isValid;
+  }
+
   public clearLocalData(): void {
     if (bypassLogin) {
       return;

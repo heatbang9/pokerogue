@@ -5,7 +5,7 @@ import { fixedInt } from "#utils/common";
 
 export class ReloadSessionPhase extends Phase {
   public readonly phaseName = "ReloadSessionPhase";
-  private systemDataStr?: string | undefined;
+  private readonly systemDataStr?: string | undefined;
 
   constructor(systemDataStr?: string) {
     super();
@@ -15,6 +15,9 @@ export class ReloadSessionPhase extends Phase {
 
   start(): void {
     globalScene.ui.setMode(UiMode.SESSION_RELOAD);
+
+    // Show a brief message before reloading
+    console.log("[ReloadSession] Session out of date detected. Reloading data from server...");
 
     let delayElapsed = false;
     let loaded = false;
@@ -31,6 +34,10 @@ export class ReloadSessionPhase extends Phase {
 
     (this.systemDataStr ? globalScene.gameData.initSystem(this.systemDataStr) : globalScene.gameData.loadSystem()).then(
       () => {
+        console.log("[ReloadSession] Session data reloaded successfully");
+        // Restart periodic session check after reload
+        globalScene.gameData.startPeriodicSessionCheck();
+
         if (delayElapsed) {
           this.end();
         } else {
