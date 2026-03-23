@@ -141,6 +141,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       { ex: 7 * 24 * 60 * 60 },
     );
 
+    // Track session for user (for session management)
+    const existingSessions = (await redis.get<string[]>(`user-sessions:${normalizedUsername}`)) || [];
+    const updatedSessions = [...existingSessions, sessionToken].slice(-10); // Keep last 10 sessions
+    await redis.set(`user-sessions:${normalizedUsername}`, updatedSessions);
+
     // Set cookie
     res.setHeader(
       "Set-Cookie",

@@ -28,7 +28,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sessionToken = sessionMatch ? sessionMatch[1] : null;
 
     if (sessionToken) {
+      // Get session to find username
+      const session = await redis.get<{ username: string }>(`session:${sessionToken}`);
+
+      // Delete session
       await redis.del(`session:${sessionToken}`);
+
+      // Remove from user's session list
+      if (session?.username) {
+        const userSessions = (await redis.get<string[]>(`user-sessions:${session.username}`)) || [];
+        const updatedSessions = userSessions.filter(t => t !== sessionToken);
+        await redis.set(`user-sessions:${session.username}`, updatedSessions);
+      }
     }
 
     // Clear cookie

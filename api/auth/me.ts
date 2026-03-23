@@ -38,9 +38,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Check expiration
-    if (Date.now() > session.expiresAt) {
+    const now = Date.now();
+    if (now > session.expiresAt) {
       await redis.del(`session:${sessionToken}`);
       return res.status(401).json({ error: "Session expired" });
+    }
+
+    // Auto-refresh session if it's about to expire (within 24 hours)
+    const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+    const REFRESH_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours before expiry
+    const timeUntilExpiry = session.expiresAt - now;
+
+    if (timeUntilExpiry < REFRESH_THRESHOLD) {
+      const newExpiresAt = now + SESSION_DURATION;
+      await redis.set(
+        `session:${sessionToken}`,
+        {
+          ...session,
+          expiresAt: newExpiresAt,
+        },
+        { ex: 7 * 24 * 60 * 60 },
+      );
+      // Update cookie with new expiry
+      res.setHeader(
+        "Set-Cookie",
+        `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,
+      );
     }
 
     // Get user data
