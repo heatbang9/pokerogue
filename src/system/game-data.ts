@@ -555,7 +555,7 @@ export class GameData {
     return true;
   }
 
-  private sessionCheckInterval?: number;
+  private sessionCheckInterval: number | undefined;
   private lastSessionCheckTime = 0;
   private readonly SESSION_CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
   private readonly SESSION_CHECK_THROTTLE_MS = 30 * 1000; // 30 seconds
@@ -581,9 +581,9 @@ export class GameData {
    * Stops periodic session validation
    */
   public stopPeriodicSessionCheck(): void {
-    if (this.sessionCheckInterval) {
+    if (this.sessionCheckInterval !== undefined) {
       window.clearInterval(this.sessionCheckInterval);
-      this.sessionCheckInterval = undefined;
+      this.sessionCheckInterval = undefined as number | undefined;
       console.log("[SessionCheck] Stopped periodic session validation");
     }
   }
@@ -601,7 +601,9 @@ export class GameData {
     this.lastSessionCheckTime = now;
 
     // Don't check during active gameplay (battle, animation, etc.)
-    if (globalScene.phaseManager?.hasActivePhases()) {
+    // Skip if we're in battle (CommandPhase, MovePhase, etc.) or other active phases
+    const currentPhase = globalScene.phaseManager?.getCurrentPhase();
+    if (currentPhase && !currentPhase.is("TitlePhase") && !currentPhase.is("LoginPhase")) {
       console.log("[SessionCheck] Skipping check - active gameplay in progress");
       return true;
     }
