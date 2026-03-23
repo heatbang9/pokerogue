@@ -1,4 +1,5 @@
 {
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [{ "source": "/api/auth/(.*)", "destination": "/api/auth/[...auth]" }]
 }
