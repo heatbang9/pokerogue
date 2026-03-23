@@ -5,7 +5,6 @@ import { speciesStarterCosts } from "#balance/starters";
 import { allAbilities } from "#data/data-lists";
 import { getNatureName } from "#data/nature";
 import { AbilityAttr } from "#enums/ability-attr";
-import { BattlerTagType } from "#enums/battler-tag-type";
 import { MysteryEncounterOptionMode } from "#enums/mystery-encounter-option-mode";
 import { MysteryEncounterTier } from "#enums/mystery-encounter-tier";
 import { MysteryEncounterType } from "#enums/mystery-encounter-type";
@@ -310,7 +309,6 @@ export const TrainingSessionEncounter: MysteryEncounter = MysteryEncounterBuilde
         const segments = Math.min(2 + Math.floor(globalScene.currentBattle.waveIndex / 30), 6);
         const modifiers = new ModifiersHolder();
         const config = getEnemyConfig(playerPokemon, segments, modifiers);
-        config.pokemonConfigs![0].tags = [BattlerTagType.MYSTERY_ENCOUNTER_POST_SUMMON];
         globalScene.removePokemonFromPlayerParty(playerPokemon, false);
 
         const onBeforeRewardsPhase = () => {
