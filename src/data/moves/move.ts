@@ -7227,7 +7227,7 @@ export class ForceSwitchOutAttr extends MoveEffectAttr {
   private readonly switchType: SwitchType;
 
   constructor(selfSwitch = false, switchType: SwitchType = SwitchType.SWITCH) {
-    super(false, { lastHitOnly: true });
+    super(selfSwitch, { lastHitOnly: true });
 
     this.selfSwitch = selfSwitch;
     this.switchType = switchType;
@@ -7412,6 +7412,8 @@ export class ForceSwitchOutAttr extends MoveEffectAttr {
         .getAttrs("ForceSwitchOutAttr")
         .find(attr => attr.switchType === SwitchType.FORCE_SWITCH);
 
+      // For non-self-switch moves (Roar, Whirlwind), hitting substitute blocks the effect
+      // For self-switch moves (U-turn, Volt Switch, Flip Turn), hitting substitute does NOT block the effect
       if (!this.selfSwitch) {
         if (move.hitsSubstitute(user, target)) {
           return false;
