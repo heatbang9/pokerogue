@@ -184,6 +184,8 @@ interface UserData {
   password: string;
   salt?: string;
   email?: string | null;
+  discordId?: string | null;
+  googleId?: string | null;
   createdAt: number;
   lastLogin: number;
   stats: {
@@ -295,10 +297,12 @@ async function handleLogin(req: VercelRequest, res: VercelResponse, redis: Redis
     `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,
   );
 
+  // Return token for legacy API compatibility
   res.status(200).json({
     success: true,
     user: { id: user.id, username: user.username, stats: user.stats },
     session: sessionToken,
+    token: sessionToken, // For legacy client compatibility
   });
 }
 
@@ -379,10 +383,12 @@ async function handleRegister(req: VercelRequest, res: VercelResponse, redis: Re
     `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,
   );
 
+  // Return token for legacy API compatibility
   res.status(201).json({
     success: true,
     user: { id: userId, username: normalizedUsername, createdAt: now },
     session: sessionToken,
+    token: sessionToken, // For legacy client compatibility
   });
 }
 
@@ -425,15 +431,19 @@ async function handleMe(req: VercelRequest, res: VercelResponse, redis: Redis): 
     return;
   }
 
+  // Legacy API compatibility - return AccountInfoResponse format
   res.status(200).json({
-    user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      createdAt: user.createdAt,
-      lastLogin: user.lastLogin,
-      stats: user.stats,
-    },
+    username: user.username,
+    lastSessionSlot: -1, // No session slots in new system
+    discordId: user.discordId || null,
+    googleId: user.googleId || null,
+    hasAdminRole: false, // TODO: Implement admin roles
+    // Extended user info
+    id: user.id,
+    email: user.email,
+    createdAt: user.createdAt,
+    lastLogin: user.lastLogin,
+    stats: user.stats,
   });
 }
 
@@ -821,6 +831,8 @@ async function handleOAuthCallback(
         password: "", // No password for OAuth users
         salt: "",
         email: userInfo.email?.toLowerCase() || null,
+        discordId: provider === "discord" ? userInfo.id : null,
+        googleId: provider === "google" ? userInfo.id : null,
         createdAt: now,
         lastLogin: now,
         stats: {
