@@ -1,16 +1,9 @@
 {
-  "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/api/auth/(.*)",
-      "destination": "/api/auth/$1"
-    }
-  ],
   "functions": {
     "api/auth/*.ts": {
-      "runtime": "@vercel/node@4"
+      "runtime": "nodejs22.x"
     }
   }
 }
