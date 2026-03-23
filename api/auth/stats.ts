@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Update leaderboard if applicable
     if (wave && wave > 0) {
-      await updateLeaderboard(user.username, wave, win);
+      await updateLeaderboard(user.username, wave, win ?? false);
     }
 
     return res.status(200).json({

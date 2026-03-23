@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       date?: string;
     };
 
-    const limitNum = Math.min(Math.max(Number.parseInt(limit) || 10, 1), 100);
+    const limitNum = Math.min(Math.max(Number.parseInt(limit as string) || 10, 1), 100);
 
     let leaderboardKey: string;
 
