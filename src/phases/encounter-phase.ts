@@ -454,9 +454,11 @@ export class EncounterPhase extends BattlePhase {
         doSummon();
       } else {
         let message = "";
+        // Use trainer type in seed offset to ensure different trainers have different dialogue variations
+        const trainerTypeSeed = (globalScene.currentBattle.trainer?.config?.trainerType ?? 0) * 1000;
         globalScene.executeWithSeedOffset(
           () => (message = randSeedItem(encounterMessages)),
-          globalScene.currentBattle.waveIndex,
+          globalScene.currentBattle.waveIndex + trainerTypeSeed,
         );
         const showDialogueAndSummon = () => {
           globalScene.ui.showDialogue(message, trainer?.getName(TrainerSlot.NONE, true), null, () => {
