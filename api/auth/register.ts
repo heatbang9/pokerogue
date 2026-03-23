@@ -1,5 +1,13 @@
 import { Redis } from "@upstash/redis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+  generateSalt,
+  generateToken,
+  hashPassword,
+  validateEmail,
+  validatePassword,
+  validateUsername,
+} from "./crypto-utils";
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "",
@@ -30,34 +38,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { username, password, email } = req.body as RegisterRequest;
 
     // Validation
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password required" });
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+      return res.status(400).json({ error: usernameValidation.error });
     }
 
-    if (username.length < 3 || username.length > 20) {
-      return res.status(400).json({ error: "Username must be 3-20 characters" });
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ error: passwordValidation.error });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      return res.status(400).json({ error: emailValidation.error });
     }
+
+    const normalizedUsername = username.toLowerCase();
 
     // Check if user exists
-    const existingUser = await redis.get(`user:${username.toLowerCase()}`);
+    const existingUser = await redis.get(`user:${normalizedUsername}`);
     if (existingUser) {
       return res.status(409).json({ error: "Username already exists" });
     }
 
-    // Create user
+    // Create user with secure password hash
     const userId = crypto.randomUUID();
-    const hashedPassword = await hashPassword(password);
+    const salt = generateSalt();
+    const hashedPassword = await hashPassword(password, salt);
     const now = Date.now();
 
     const userData = {
       id: userId,
-      username: username.toLowerCase(),
+      username: normalizedUsername,
       password: hashedPassword,
-      email: email || null,
+      salt, // Store salt for verification
+      email: email?.toLowerCase() || null,
       createdAt: now,
       lastLogin: now,
       stats: {
@@ -68,8 +83,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     // Save user
-    await redis.set(`user:${username.toLowerCase()}`, userData);
-    await redis.set(`user:id:${userId}`, username.toLowerCase());
+    await redis.set(`user:${normalizedUsername}`, userData);
+    await redis.set(`user:id:${userId}`, normalizedUsername);
 
     // Create session
     const sessionToken = generateToken();
@@ -77,12 +92,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `session:${sessionToken}`,
       {
         userId,
-        username: username.toLowerCase(),
+        username: normalizedUsername,
         createdAt: now,
         expiresAt: now + 7 * 24 * 60 * 60 * 1000, // 7 days
       },
-      { ex: 7 * 24 * 60 * 60 },
-    ); // 7 days TTL
+      { ex: 7 * 24 * 60 * 60 }, // 7 days TTL
+    );
 
     // Set cookie
     res.setHeader(
@@ -94,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       success: true,
       user: {
         id: userId,
-        username: username.toLowerCase(),
+        username: normalizedUsername,
         createdAt: now,
       },
       session: sessionToken,
@@ -103,20 +118,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error("Register error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + "pokerogue_salt_2026");
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-function generateToken(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array)
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
 }
