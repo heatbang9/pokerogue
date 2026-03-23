@@ -1,5 +1,5 @@
 import { pokerogueApi } from "#api/pokerogue-api";
-import { clientSessionId } from "#app/account";
+import { clientSessionId, updateGameStats } from "#app/account";
 import { globalScene } from "#app/global-scene";
 import { pokemonEvolutions } from "#balance/pokemon-evolutions";
 import { bypassLogin } from "#constants/app-constants";
@@ -163,6 +163,16 @@ export class GameOverPhase extends BattlePhase {
   }
 
   handleGameOver(): void {
+    // Update user game statistics
+    if (!bypassLogin) {
+      updateGameStats({
+        isVictory: this.isVictory,
+        highestWave: globalScene.currentBattle.waveIndex,
+        pokemonCaught: globalScene.gameData.gameStats.pokemonCaught,
+        trainersDefeated: globalScene.gameData.gameStats.trainersDefeated,
+      }).catch(err => console.warn("Failed to update game stats:", err));
+    }
+
     const doGameOver = (newClear: boolean) => {
       globalScene.disableMenu = true;
       globalScene.time.delayedCall(1000, () => {
