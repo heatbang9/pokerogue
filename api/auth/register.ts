@@ -8,6 +8,7 @@ import {
   validatePassword,
   validateUsername,
 } from "./crypto-utils";
+import { checkRateLimit, createRateLimitKey, getClientIp, REGISTER_RATE_LIMIT } from "./rate-limiter";
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "",
@@ -33,6 +34,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  // Get client IP for rate limiting
+  const clientIp = getClientIp(req);
+
+  // Rate limiting check by IP (prevent mass registration)
+  const rateLimitKey = createRateLimitKey(clientIp, "register");
+  const rateLimitResult = await checkRateLimit(rateLimitKey, REGISTER_RATE_LIMIT);
+
+  if (!rateLimitResult.allowed) {
+    const retryAfter = rateLimitResult.blockExpiresAt
+      ? Math.ceil((rateLimitResult.blockExpiresAt - Date.now()) / 1000)
+      : 3600;
+    res.setHeader("Retry-After", retryAfter.toString());
+    return res.status(429).json({
+      error: "Too many registration attempts. Please try again later.",
+      retryAfter,
+    });
+  }
+
+  // Add rate limit headers
+  res.setHeader("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+  res.setHeader("X-RateLimit-Reset", rateLimitResult.resetAt?.toString() || "0");
 
   try {
     const { username, password, email } = req.body as RegisterRequest;

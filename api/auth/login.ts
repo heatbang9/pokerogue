@@ -1,6 +1,7 @@
 import { Redis } from "@upstash/redis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { generateSalt, generateToken, hashPassword, verifyPassword } from "./crypto-utils";
+import { checkRateLimit, createRateLimitKey, getClientIp, LOGIN_RATE_LIMIT, resetRateLimit } from "./rate-limiter";
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "",
@@ -52,6 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // Get client IP for rate limiting
+  const clientIp = getClientIp(req);
+
   try {
     const { username, password } = req.body as LoginRequest;
 
@@ -60,6 +64,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const normalizedUsername = username.toLowerCase();
+
+    // Rate limiting check by IP + username
+    const rateLimitKey = createRateLimitKey(clientIp, "login", normalizedUsername);
+    const rateLimitResult = await checkRateLimit(rateLimitKey, LOGIN_RATE_LIMIT);
+
+    if (!rateLimitResult.allowed) {
+      const retryAfter = rateLimitResult.blockExpiresAt
+        ? Math.ceil((rateLimitResult.blockExpiresAt - Date.now()) / 1000)
+        : 900;
+      res.setHeader("Retry-After", retryAfter.toString());
+      return res.status(429).json({
+        error: "Too many login attempts. Please try again later.",
+        retryAfter,
+      });
+    }
+
+    // Add rate limit headers
+    res.setHeader("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+    res.setHeader("X-RateLimit-Reset", rateLimitResult.resetAt?.toString() || "0");
 
     // Get user
     const user = (await redis.get(`user:${normalizedUsername}`)) as UserData | null;
@@ -82,8 +105,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!passwordValid) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({
+        error: "Invalid credentials",
+        remaining: rateLimitResult.remaining - 1,
+      });
     }
+
+    // Reset rate limit on successful login
+    await resetRateLimit(rateLimitKey);
 
     const now = Date.now();
 
