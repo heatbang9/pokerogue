@@ -45,6 +45,8 @@
   },
   "dependencies": {
     "@material/material-color-utilities": "^0.3.0",
+    "@upstash/redis": "^1.37.0",
+    "@vercel/node": "^5.6.18",
     "ajv": "^8.18.0",
     "compare-versions": "^6.1.1",
     "core-js": "^3.48.0",
