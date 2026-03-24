@@ -1,0 +1,69 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Git
+.git
+.gitignore
+dist/.git
+
+# Testing
+test
+*.test.ts
+*.spec.ts
+coverage
+vitest.config.ts
+
+# Development files
+*.log
+logs
+temp
+*.local
+
+# Documentation
+typedoc
+dependency-graph.svg
+*.csv
+
+# IDE
+.vscode
+.idea
+*.code-workspace
+.DS_Store
+
+# Build artifacts (keep dist for deployment)
+dist-ssr
+build
+
+# Large asset directories (will be served from dist)
+# Note: assets are processed during build and included in dist
+assets/images/pokemon
+assets/images/trainer
+assets/images/ui
+
+# Scripts (not needed in production)
+scripts
+
+# Development configs (keep build configs)
+.devcontainer
+.github
+.biome.jsonc
+biome.jsonc
+# tsconfig.json - NEEDED for path aliases
+# jsconfig.json - NEEDED for path aliases
+# vite.config.ts - NEEDED for build
+vitest.config.ts
+typedoc.config.js
+tsdoc.json
+dependency-cruiser.cjs
+.ls-lint.yml
+lefthook.yml
+
+# Misc
+LICENSES
+LICENSE
+CREDITS.md
+CONTRIBUTING.md
+README.md
+REUSE.toml
+# Build Test Tue Mar 24 11:37:09 KST 2026

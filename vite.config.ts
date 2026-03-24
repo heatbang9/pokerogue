@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { resolve } from "path";
 import { defineConfig, loadEnv, type UserConfig, type UserConfigFnPromise } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -54,41 +53,6 @@ export default defineConfig(async config => {
     publicDir: command === "serve" ? "assets" : false,
     server: {
       port: Number.isNaN(envPort) ? 8000 : envPort,
-    },
-    resolve: {
-      alias: [
-        // CRITICAL: Explicit mapping must come BEFORE regex patterns!
-        // This import resolves to pokemon-forms, not data directly
-        {
-          find: "#data/form-change-triggers",
-          replacement: resolve(__dirname, "src/data/pokemon-forms/form-change-triggers"),
-        },
-        // Regex patterns for path aliases
-        { find: /^#app\//, replacement: resolve(__dirname, "src") + "/" },
-        { find: /^#abilities\//, replacement: resolve(__dirname, "src/data/abilities") + "/" },
-        { find: /^#api\//, replacement: resolve(__dirname, "src/plugins/api") + "/" },
-        { find: /^#biomes\//, replacement: resolve(__dirname, "src/data/balance/biomes") + "/" },
-        { find: /^#balance\//, replacement: resolve(__dirname, "src/data/balance") + "/" },
-        { find: /^#constants\//, replacement: resolve(__dirname, "src/constants") + "/" },
-        { find: /^#enums\//, replacement: resolve(__dirname, "src/enums") + "/" },
-        { find: /^#events\//, replacement: resolve(__dirname, "src/events") + "/" },
-        { find: /^#field\//, replacement: resolve(__dirname, "src/field") + "/" },
-        { find: /^#init\//, replacement: resolve(__dirname, "src/init") + "/" },
-        { find: /^#inputs\//, replacement: resolve(__dirname, "src/configs/inputs") + "/" },
-        { find: /^#modifiers\//, replacement: resolve(__dirname, "src/modifier") + "/" },
-        { find: /^#moves\//, replacement: resolve(__dirname, "src/data/moves") + "/" },
-        { find: /^#mystery-encounters\//, replacement: resolve(__dirname, "src/data/mystery-encounters") + "/" },
-        { find: /^#phases\//, replacement: resolve(__dirname, "src/phases") + "/" },
-        { find: /^#plugins\//, replacement: resolve(__dirname, "src/plugins") + "/" },
-        { find: /^#sprites\//, replacement: resolve(__dirname, "src/sprites") + "/" },
-        { find: /^#system\//, replacement: resolve(__dirname, "src/system") + "/" },
-        { find: /^#trainers\//, replacement: resolve(__dirname, "src/data/trainers") + "/" },
-        { find: /^#types\//, replacement: resolve(__dirname, "src/@types") + "/" },
-        { find: /^#ui\//, replacement: resolve(__dirname, "src/ui") + "/" },
-        { find: /^#utils\//, replacement: resolve(__dirname, "src/utils") + "/" },
-        { find: /^#data\//, replacement: resolve(__dirname, "src/data") + "/" },
-        { find: "#package.json", replacement: resolve(__dirname, "package.json") },
-      ],
     },
   } satisfies UserConfig;
 });
