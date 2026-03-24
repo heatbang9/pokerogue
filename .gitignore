@@ -46,3 +46,6 @@ coverage
 
 # Script outputs
 *.csv
+
+# Vercel
+.vercel
