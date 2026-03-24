@@ -3,6 +3,7 @@ import { globalScene } from "#app/global-scene";
 import { TextStyle } from "#enums/text-style";
 import { UiMode } from "#enums/ui-mode";
 import type { LoginPhase } from "#phases/login-phase";
+import type { AccountRegisterRequest } from "#types/api";
 import type { InputFieldConfig } from "#ui/form-modal-ui-handler";
 import type { ModalConfig } from "#ui/modal-ui-handler";
 import { addTextObject } from "#ui/text";
@@ -106,7 +107,7 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
           return onFail(i18next.t("menu:passwordNotMatchingConfirmPassword"));
         }
         const [usernameInput, emailInput, passwordInput] = this.inputs;
-        const registerData: import("#types/api").AccountRegisterRequest = {
+        const registerData: AccountRegisterRequest = {
           username: usernameInput.text,
           password: passwordInput.text,
         };
