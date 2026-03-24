@@ -44,14 +44,11 @@ assets/images/ui
 # Scripts (not needed in production)
 scripts
 
-# Development configs (keep build configs)
+# Development configs - KEEP tsconfig.json, jsconfig.json, vite.config.ts for build!
 .devcontainer
 .github
 .biome.jsonc
 biome.jsonc
-# tsconfig.json - NEEDED for path aliases
-# jsconfig.json - NEEDED for path aliases
-# vite.config.ts - NEEDED for build
 vitest.config.ts
 typedoc.config.js
 tsdoc.json
@@ -66,4 +63,3 @@ CREDITS.md
 CONTRIBUTING.md
 README.md
 REUSE.toml
-# Build Test Tue Mar 24 11:37:09 KST 2026
