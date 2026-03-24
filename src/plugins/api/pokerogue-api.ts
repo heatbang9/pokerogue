@@ -78,10 +78,10 @@ export class PokerogueApi extends ApiBase {
   //#endregion
 }
 
-// In production, use the current domain. In development, use localhost.
+// In production, use the current origin. In development, use localhost.
 const defaultBaseUrl =
   typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? "" // Use relative URLs in production (same domain)
+    ? `${window.location.origin}` // Use current origin (e.g., https://pokerogue-hogoo.vercel.app)
     : "http://localhost:8001"; // Use localhost in development
 
 export const pokerogueApi = new PokerogueApi(import.meta.env.VITE_SERVER_URL ?? defaultBaseUrl);
