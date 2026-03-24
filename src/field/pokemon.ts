@@ -4592,7 +4592,9 @@ export abstract class Pokemon extends Phaser.GameObjects.Container {
       this.abilityIndex = abilityCount - 1;
     }
 
-    globalScene.gameData.setPokemonSeen(this, false);
+    // Don't set Pokemon as seen when just changing form (Issue #5900)
+    // Only wild/trainer encounters should count as "seen"
+    // globalScene.gameData.setPokemonSeen(this, false);
     this.setScale(this.getSpriteScale());
 
     await this.loadAssets();
@@ -6239,7 +6241,9 @@ export class PlayerPokemon extends Pokemon {
       }
       if (!globalScene.gameMode.isDaily || this.metBiome > -1) {
         globalScene.gameData.updateSpeciesDexIvs(this.species.speciesId, this.ivs);
-        globalScene.gameData.setPokemonSeen(this, false);
+        // Don't set Pokemon as seen when evolving (Issue #5900)
+        // Only wild/trainer encounters should count as "seen"
+        // globalScene.gameData.setPokemonSeen(this, false);
         globalScene.gameData.setPokemonCaught(this, false).then(() => updateAndResolve());
       } else {
         updateAndResolve();
@@ -6346,7 +6350,9 @@ export class PlayerPokemon extends Pokemon {
         });
       };
       if (!globalScene.gameMode.isDaily || this.metBiome > -1) {
-        globalScene.gameData.setPokemonSeen(this, false);
+        // Don't set Pokemon as seen when changing form (Issue #5900)
+        // Only wild/trainer encounters should count as "seen"
+        // globalScene.gameData.setPokemonSeen(this, false);
         globalScene.gameData.setPokemonCaught(this, false).then(() => updateAndResolve());
       } else {
         updateAndResolve();
