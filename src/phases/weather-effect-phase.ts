@@ -80,7 +80,12 @@ export class WeatherEffectPhase extends CommonAnimPhase {
         }
       });
 
-      super.start();
+      // Only play animation if weatherAnimations is enabled
+      if (globalScene.weatherAnimations) {
+        super.start();
+      } else {
+        this.end();
+      }
     });
   }
 }

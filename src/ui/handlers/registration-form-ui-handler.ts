@@ -52,6 +52,10 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
     const inputFieldConfigs: InputFieldConfig[] = [];
     inputFieldConfigs.push({ label: i18next.t("menu:username") });
     inputFieldConfigs.push({
+      label: i18next.t("menu:email"),
+      isOptional: true,
+    });
+    inputFieldConfigs.push({
       label: i18next.t("menu:password"),
       isPassword: true,
     });
@@ -95,43 +99,49 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
         if (!this.inputs[0].text) {
           return onFail(i18next.t("menu:emptyUsername"));
         }
-        if (!this.inputs[1].text) {
+        if (!this.inputs[2].text) {
           return onFail(this.getReadableErrorMessage("invalid password"));
         }
-        if (this.inputs[1].text !== this.inputs[2].text) {
+        if (this.inputs[2].text !== this.inputs[3].text) {
           return onFail(i18next.t("menu:passwordNotMatchingConfirmPassword"));
         }
-        const [usernameInput, passwordInput] = this.inputs;
-        pokerogueApi.account
-          .register({
-            username: usernameInput.text,
-            password: passwordInput.text,
-          })
-          .then(registerError => {
-            if (registerError) {
-              onFail(registerError);
-            } else {
-              const username = usernameInput.text;
-              const password = passwordInput.text;
-              pokerogueApi.account.login({ username, password }).then(loginError => {
-                if (loginError) {
-                  // retry once if the first attempt fails
-                  const retryLogin = () => {
-                    pokerogueApi.account.login({ username, password }).then(error => {
-                      if (error) {
-                        (globalScene.phaseManager.getCurrentPhase() as LoginPhase).goToLogin();
-                      } else {
-                        originalRegistrationAction?.();
-                      }
-                    });
-                  };
-                  globalScene.time.delayedCall(fixedInt(2000), retryLogin);
-                } else {
-                  originalRegistrationAction?.();
-                }
-              });
-            }
-          });
+        const [usernameInput, emailInput, passwordInput] = this.inputs;
+        const registerData: {
+          username: string;
+          password: string;
+          email?: string;
+        } = {
+          username: usernameInput.text,
+          password: passwordInput.text,
+        };
+        if (emailInput.text) {
+          registerData.email = emailInput.text;
+        }
+        pokerogueApi.account.register(registerData).then(registerError => {
+          if (registerError) {
+            onFail(registerError);
+          } else {
+            const username = usernameInput.text;
+            const password = passwordInput.text;
+            pokerogueApi.account.login({ username, password }).then(loginError => {
+              if (loginError) {
+                // retry once if the first attempt fails
+                const retryLogin = () => {
+                  pokerogueApi.account.login({ username, password }).then(error => {
+                    if (error) {
+                      (globalScene.phaseManager.getCurrentPhase() as LoginPhase).goToLogin();
+                    } else {
+                      originalRegistrationAction?.();
+                    }
+                  });
+                };
+                globalScene.time.delayedCall(fixedInt(2000), retryLogin);
+              } else {
+                originalRegistrationAction?.();
+              }
+            });
+          }
+        });
       }
     };
 
