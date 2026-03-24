@@ -32,6 +32,8 @@ path = [
     ".env.*",
     # Development files considered code
     ".vscode/*.json",
+    # GitHub Actions workflows
+    ".github/workflows/**/*.yml",
 ]
 SPDX-FileCopyrightText = "2024-2025 Pagefault Games"
 SPDX-License-Identifier = "AGPL-3.0-only"
