@@ -52,6 +52,7 @@ async function start() {
 
   console.log(chalk.yellow(`🥚 Egg Move Parser - v${version}`));
 
+  /** @type {{file?: string, text?: string, console?: string, interactive?: boolean}} */
   const options = program.opts();
 
   let csv = "";
@@ -76,7 +77,7 @@ async function start() {
 
 /**
  * Handle the input method based on command options.
- * @param {Object} options - The parsed command options
+ * @param {{file?: string, text?: string, console?: string, interactive?: boolean}} options - The parsed command options
  * @returns {Promise<{type: "Console" | "File", value: string} | {type: "Exit"}>} The input method selected by the user
  */
 async function handleInput(options) {

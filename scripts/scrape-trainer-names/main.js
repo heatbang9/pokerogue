@@ -51,6 +51,7 @@ async function main() {
     .option("-o, --outfile <file>", "Output file path for the scraped data")
     .parse(process.argv);
 
+  /** @type {{outfile?: string}} */
   const options = program.opts();
   const trainerClasses = program.args;
 

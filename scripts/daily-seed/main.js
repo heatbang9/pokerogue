@@ -100,6 +100,7 @@ async function main() {
     .option("-o, --outfile <file>", "Output file path for the generated seed config")
     .parse(process.argv);
 
+  /** @type {{edit?: boolean, outfile?: string}} */
   const options = program.opts();
 
   console.group(chalk.grey(`🌱 Daily Seed Generator - v${SCRIPT_VERSION}\n`));
@@ -198,6 +199,7 @@ async function finish() {
   console.groupEnd();
   // TODO: do we also need to validate here?
 
+  /** @type {{edit?: boolean, outfile?: string}} */
   const options = program.opts();
   const outFile = options.outfile;
   if (outFile) {
