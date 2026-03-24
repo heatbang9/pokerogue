@@ -106,37 +106,38 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
           return onFail(i18next.t("menu:passwordNotMatchingConfirmPassword"));
         }
         const [usernameInput, emailInput, passwordInput] = this.inputs;
-        pokerogueApi.account
-          .register({
-            username: usernameInput.text,
-            password: passwordInput.text,
-            email: emailInput.text || undefined,
-          })
-          .then(registerError => {
-            if (registerError) {
-              onFail(registerError);
-            } else {
-              const username = usernameInput.text;
-              const password = passwordInput.text;
-              pokerogueApi.account.login({ username, password }).then(loginError => {
-                if (loginError) {
-                  // retry once if the first attempt fails
-                  const retryLogin = () => {
-                    pokerogueApi.account.login({ username, password }).then(error => {
-                      if (error) {
-                        (globalScene.phaseManager.getCurrentPhase() as LoginPhase).goToLogin();
-                      } else {
-                        originalRegistrationAction?.();
-                      }
-                    });
-                  };
-                  globalScene.time.delayedCall(fixedInt(2000), retryLogin);
-                } else {
-                  originalRegistrationAction?.();
-                }
-              });
-            }
-          });
+        const registerData: pokerogueApi.account.register extends (data: infer R) => any ? R : never = {
+          username: usernameInput.text,
+          password: passwordInput.text,
+        };
+        if (emailInput.text) {
+          registerData.email = emailInput.text;
+        }
+        pokerogueApi.account.register(registerData).then(registerError => {
+          if (registerError) {
+            onFail(registerError);
+          } else {
+            const username = usernameInput.text;
+            const password = passwordInput.text;
+            pokerogueApi.account.login({ username, password }).then(loginError => {
+              if (loginError) {
+                // retry once if the first attempt fails
+                const retryLogin = () => {
+                  pokerogueApi.account.login({ username, password }).then(error => {
+                    if (error) {
+                      (globalScene.phaseManager.getCurrentPhase() as LoginPhase).goToLogin();
+                    } else {
+                      originalRegistrationAction?.();
+                    }
+                  });
+                };
+                globalScene.time.delayedCall(fixedInt(2000), retryLogin);
+              } else {
+                originalRegistrationAction?.();
+              }
+            });
+          }
+        });
       }
     };
 

@@ -222,4 +222,5 @@ export interface InputFieldConfig {
   label: string;
   isPassword?: boolean;
   isReadOnly?: boolean;
+  isOptional?: boolean;
 }
