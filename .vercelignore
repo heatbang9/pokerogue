@@ -35,11 +35,10 @@ dependency-graph.svg
 dist-ssr
 build
 
-# Large asset directories (will be served from dist)
-# Note: assets are processed during build and included in dist
-assets/images/pokemon
-assets/images/trainer
-assets/images/ui
+# Large asset directories (keep these for production!)
+# assets/images/pokemon
+# assets/images/trainer
+# assets/images/ui
 
 # Scripts (not needed in production)
 scripts
