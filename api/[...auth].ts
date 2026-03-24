@@ -1209,8 +1209,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const redis = getRedis();
 
   // Parse the path to determine the action
+  // /api/auth/login → auth = ["auth", "login"] → action = "login"
   const auth = req.query.auth as string[] | undefined;
-  const action = Array.isArray(auth) ? auth[0] : auth || "me";
+  const action = Array.isArray(auth) ? auth[1] || auth[0] : auth || "me";
 
   try {
     switch (action) {
