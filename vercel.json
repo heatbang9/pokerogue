@@ -2,5 +2,11 @@
   "buildCommand": "pnpm install --ignore-scripts && pnpm run build",
   "outputDirectory": "dist",
   "framework": null,
-  "installCommand": "pnpm install --ignore-scripts"
+  "installCommand": "pnpm install --ignore-scripts",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
 }
