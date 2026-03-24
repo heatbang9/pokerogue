@@ -85,7 +85,8 @@ export abstract class OAuthProvidersUiHandler extends LoginRegisterInfoContainer
     const externalPartyIconWidth = this.externalPartyBg.width / 3.1;
 
     const getRedirectUri = (service: string): string => {
-      return encodeURIComponent(`${import.meta.env.VITE_SERVER_URL}/auth/${service}/callback`);
+      // Vercel API routes are under /api/auth/{service}/callback
+      return encodeURIComponent(`${import.meta.env.VITE_SERVER_URL}/api/auth/${service}/callback`);
     };
 
     this.discordImage //

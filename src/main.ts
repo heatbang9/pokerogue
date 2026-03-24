@@ -10,6 +10,7 @@ import BBCodeTextPlugin from "phaser3-rex-plugins/plugins/bbcodetext-plugin";
 import InputTextPlugin from "phaser3-rex-plugins/plugins/inputtext-plugin";
 import TransitionImagePackPlugin from "phaser3-rex-plugins/templates/transitionimagepack/transitionimagepack-plugin";
 import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin";
+import { getAuth } from "./auth/auth-ui";
 
 if (isBeta || isDev) {
   document.title += " (Beta)";
@@ -87,6 +88,17 @@ async function startGame(gameManifest?: Record<string, string>): Promise<void> {
   });
   game.sound.pauseOnBlur = false;
   initializeManifest(gameManifest);
+
+  // Initialize Auth UI
+  const authContainer = document.getElementById("auth-container");
+  if (authContainer) {
+    const auth = getAuth();
+    auth.createAuthButton(authContainer);
+    auth.setOnAuthChange(user => {
+      console.log("Auth state changed:", user ? `Logged in as ${user.username}` : "Logged out");
+      auth.updateAuthButton();
+    });
+  }
 }
 
 let manifest: Record<string, string> | undefined;

@@ -46,3 +46,37 @@ export async function updateUserInfo(): Promise<[success: boolean, status: numbe
   });
   return [true, 200];
 }
+
+/**
+ * Update user game statistics after a game ends
+ */
+export async function updateGameStats(stats: {
+  isVictory: boolean;
+  highestWave: number;
+  pokemonCaught?: number;
+  trainersDefeated?: number;
+}): Promise<boolean> {
+  if (bypassLogin || !loggedInUser) {
+    return false;
+  }
+
+  try {
+    const response = await fetch("/api/auth/stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        gamesPlayed: 1,
+        wins: stats.isVictory ? 1 : 0,
+        highestWave: stats.highestWave,
+        totalPokemonCaught: stats.pokemonCaught || 0,
+        totalTrainersDefeated: stats.trainersDefeated || 0,
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.warn("Failed to update game stats:", error);
+    return false;
+  }
+}

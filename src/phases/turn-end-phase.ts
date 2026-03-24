@@ -31,10 +31,7 @@ export class TurnEndPhase extends FieldPhase {
 
     const handlePokemon = (pokemon: Pokemon) => {
       if (!pokemon.switchOutStatus) {
-        pokemon.lapseTags(BattlerTagLapseType.TURN_END);
-
-        globalScene.applyModifiers(TurnHealModifier, pokemon.isPlayer(), pokemon);
-
+        // Grassy Terrain healing (mainline step 7)
         if (globalScene.arena.terrain?.terrainType === TerrainType.GRASSY && pokemon.isGrounded()) {
           globalScene.phaseManager.unshiftNew(
             "PokemonHealPhase",
@@ -47,14 +44,27 @@ export class TurnEndPhase extends FieldPhase {
           );
         }
 
+        // Status healing abilities (mainline step 8 - Healer, Hydration, Shed Skin)
+        // These are handled via PostTurnStatusHealAbAttr which is applied in PostTurnAbAttr
+        // Note: Status healing abilities should trigger before status damage
+
+        // Leftovers / Black Sludge healing (mainline step 9)
+        globalScene.applyModifiers(TurnHealModifier, pokemon.isPlayer(), pokemon);
+
+        // Enemy-specific healing
         if (!pokemon.isPlayer()) {
           globalScene.applyModifiers(EnemyTurnHealModifier, false, pokemon);
           globalScene.applyModifier(EnemyStatusEffectHealChanceModifier, false, pokemon);
         }
 
+        // Curse, Binding moves, Octolock, etc. (mainline steps 16-18)
+        pokemon.lapseTags(BattlerTagLapseType.TURN_END);
+
+        // Post-turn abilities (mainline step 29 - Harvest, Moody, Speed Boost, etc.)
         applyAbAttrs("PostTurnAbAttr", { pokemon });
       }
 
+      // Flame Orb / Toxic Orb (mainline step 30)
       globalScene.applyModifiers(TurnStatusEffectModifier, pokemon.isPlayer(), pokemon);
       globalScene.applyModifiers(TurnHeldItemTransferModifier, pokemon.isPlayer(), pokemon);
 
