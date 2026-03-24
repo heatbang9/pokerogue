@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 The Pokerogue Team
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { Redis } from "@upstash/redis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 

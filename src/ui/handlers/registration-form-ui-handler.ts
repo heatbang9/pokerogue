@@ -1,3 +1,4 @@
+import type { AccountRegisterRequest } from "#@types/api";
 import { pokerogueApi } from "#api/pokerogue-api";
 import { globalScene } from "#app/global-scene";
 import { TextStyle } from "#enums/text-style";
@@ -106,7 +107,7 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
           return onFail(i18next.t("menu:passwordNotMatchingConfirmPassword"));
         }
         const [usernameInput, emailInput, passwordInput] = this.inputs;
-        const registerData: pokerogueApi.account.register extends (data: infer R) => any ? R : never = {
+        const registerData: AccountRegisterRequest = {
           username: usernameInput.text,
           password: passwordInput.text,
         };
