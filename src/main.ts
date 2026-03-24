@@ -1,8 +1,6 @@
-import "#app/polyfills"; // All polyfills MUST be loaded first for side effects
-import "#plugins/i18n"; // Initializes i18n on import
+import "./polyfills"; // All polyfills MUST be loaded first for side effects
+import "./plugins/i18n"; // Initializes i18n on import
 
-import { initializeManifest } from "#app/global-manifest";
-import { InvertPostFX } from "#app/pipelines/invert";
 import { isBeta, isDev } from "#constants/app-constants";
 import { version } from "#package.json";
 import Phaser from "phaser";
@@ -11,6 +9,8 @@ import InputTextPlugin from "phaser3-rex-plugins/plugins/inputtext-plugin";
 import TransitionImagePackPlugin from "phaser3-rex-plugins/templates/transitionimagepack/transitionimagepack-plugin";
 import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin";
 import { getAuth } from "./auth/auth-ui";
+import { initializeManifest } from "./global-manifest";
+import { InvertPostFX } from "./pipelines/invert";
 
 if (isBeta || isDev) {
   document.title += " (Beta)";
