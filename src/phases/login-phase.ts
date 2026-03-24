@@ -54,6 +54,9 @@ export class LoginPhase extends Phase {
   public override async end(): Promise<void> {
     globalScene.ui.setMode(UiMode.MESSAGE);
 
+    // Start periodic session validation to detect out-of-date sessions early
+    globalScene.gameData.startPeriodicSessionCheck();
+
     if (!globalScene.gameData.gender) {
       globalScene.phaseManager.unshiftNew("SelectGenderPhase");
     }

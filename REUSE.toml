@@ -47,6 +47,8 @@ path = [
     # Configuration files
     ".editorconfig",
     ".vscode/**/*.json",
+    ".vercelignore",
+    "vercel.json",
     # any pokerogue save files for tests
     "**/*.prsv",
     # pnpm related files of insignificant originality

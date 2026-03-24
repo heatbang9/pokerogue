@@ -35,7 +35,7 @@ export class SessionReloadModalUiHandler extends ModalUiHandler {
     const label = addTextObject(
       this.getWidth() / 2,
       this.getHeight() / 2,
-      "Your session is out of date.\nYour data will be reloaded…",
+      "Your session is out of date.\nSyncing data from server…",
       TextStyle.WINDOW,
       { fontSize: "48px", align: "center" },
     );
