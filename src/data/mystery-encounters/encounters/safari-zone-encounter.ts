@@ -551,26 +551,26 @@ async function doEndTurn(cursorIndex: number) {
   if (isFlee) {
     // Pokemon flees!
     await doPokemonFlee(pokemon);
-    // Check how many safari pokemon left
-    if (encounter.misc.safariPokemonRemaining > 0) {
+  }
+
+  // Check how many safari pokemon left
+  if (encounter.misc.safariPokemonRemaining > 0) {
+    if (isFlee) {
       await summonSafariPokemon();
-      initSubsequentOptionSelect({
-        overrideOptions: safariZoneGameOptions,
-        startingCursorIndex: cursorIndex,
-        hideDescription: true,
-      });
-    } else {
-      // End safari mode
-      encounter.continuousEncounter = false;
-      leaveEncounterWithoutBattle(true);
     }
-  } else {
-    globalScene.phaseManager.queueMessage(getEncounterText(`${namespace}:safari.watching`) ?? "", 0, null, 1000);
     initSubsequentOptionSelect({
       overrideOptions: safariZoneGameOptions,
       startingCursorIndex: cursorIndex,
       hideDescription: true,
     });
+  } else {
+    // End safari mode
+    encounter.continuousEncounter = false;
+    leaveEncounterWithoutBattle(true);
+  }
+
+  if (!isFlee && encounter.misc.safariPokemonRemaining > 0) {
+    globalScene.phaseManager.queueMessage(getEncounterText(`${namespace}:safari.watching`) ?? "", 0, null, 1000);
   }
 }
 
@@ -582,3 +582,7 @@ export function getSafariSpeciesSpawn(): PokemonSpecies {
     getRandomSpeciesByStarterCost([0, 5], NON_LEGEND_PARADOX_POKEMON, undefined, false, false, false),
   );
 }
+
+// Test-only export - DO NOT USE in production code
+export const __DO_NOT_USE__doEndTurn = doEndTurn;
+export const __DO_NOT_USE__isPokemonFlee = isPokemonFlee;

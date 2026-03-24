@@ -137,6 +137,106 @@ describe("Safari Zone - Mystery Encounter", () => {
     // TODO: Tests for player actions inside the Safari Zone (Pokeball, Mud, Bait, Flee)
   });
 
+  describe("Issue #6954 - Safari freeze on last pokemon", () => {
+    it("should end encounter when last pokemon doesn't flee and safariPokemonRemaining is 0", async () => {
+      const leaveEncounterWithoutBattleSpy = vi.spyOn(EncounterPhaseUtils, "leaveEncounterWithoutBattle");
+
+      await game.runToMysteryEncounter(MysteryEncounterType.SAFARI_ZONE, defaultParty);
+      await game.phaseInterceptor.to("MysteryEncounterPhase", false);
+
+      const encounter = scene.currentBattle.mysteryEncounter!;
+      expect(encounter).toBeDefined();
+
+      // Create a mock pokemon with required properties
+      const mockPokemon = {
+        species: { catchRate: 150 },
+      } as any;
+
+      // Simulate being on the last pokemon (safariPokemonRemaining = 0)
+      encounter.misc = {
+        safariPokemonRemaining: 0,
+        pokemon: mockPokemon,
+        catchStage: 0,
+        fleeStage: 0,
+      };
+      encounter.continuousEncounter = true;
+
+      // Mock the flee check to return false (pokemon doesn't flee)
+      const fleeModule = await import("#mystery-encounters/encounter-pokemon-utils");
+      vi.spyOn(fleeModule, "doPokemonFlee").mockResolvedValue(undefined);
+
+      // Import the safari zone module to access doEndTurn
+      const safariModule = await import("#mystery-encounters/safari-zone-encounter");
+
+      // Call doEndTurn with cursor index 0 (simulating after throw ball failed)
+      // Since isPokemonFlee is internal and can't be mocked easily, we'll test the actual behavior
+      // by mocking the random behavior in isPokemonFlee
+      const originalMathRandom = Math.random;
+      Math.random = () => 1.0; // Always return 1.0, which will make flee check fail (high random = no flee)
+
+      try {
+        // @ts-expect-error - accessing internal function for testing
+        await safariModule.__DO_NOT_USE__doEndTurn?.(0);
+      } finally {
+        Math.random = originalMathRandom;
+      }
+
+      // Should call leaveEncounterWithoutBattle since safariPokemonRemaining is 0
+      expect(leaveEncounterWithoutBattleSpy).toHaveBeenCalled();
+      expect(encounter.continuousEncounter).toBe(false);
+    });
+
+    it("should continue encounter when pokemon doesn't flee and safariPokemonRemaining > 0", async () => {
+      const leaveEncounterWithoutBattleSpy = vi.spyOn(EncounterPhaseUtils, "leaveEncounterWithoutBattle");
+      const initSubsequentOptionSelectSpy = vi.spyOn(EncounterPhaseUtils, "initSubsequentOptionSelect");
+
+      await game.runToMysteryEncounter(MysteryEncounterType.SAFARI_ZONE, defaultParty);
+      await game.phaseInterceptor.to("MysteryEncounterPhase", false);
+
+      const encounter = scene.currentBattle.mysteryEncounter!;
+      expect(encounter).toBeDefined();
+
+      // Create a mock pokemon with required properties
+      const mockPokemon = {
+        species: { catchRate: 150 },
+      } as any;
+
+      // Simulate having remaining pokemon (safariPokemonRemaining > 0)
+      encounter.misc = {
+        safariPokemonRemaining: 1,
+        pokemon: mockPokemon,
+        catchStage: 0,
+        fleeStage: 0,
+      };
+      encounter.continuousEncounter = true;
+
+      // Mock the flee check to return false (pokemon doesn't flee)
+      const fleeModule = await import("#mystery-encounters/encounter-pokemon-utils");
+      vi.spyOn(fleeModule, "doPokemonFlee").mockResolvedValue(undefined);
+
+      // Import the safari zone module to access doEndTurn
+      const safariModule = await import("#mystery-encounters/safari-zone-encounter");
+
+      // Call doEndTurn with cursor index 0 (simulating after throw ball failed)
+      // Since isPokemonFlee is internal and can't be mocked easily, we'll test the actual behavior
+      // by mocking the random behavior in isPokemonFlee
+      const originalMathRandom = Math.random;
+      Math.random = () => 1.0; // Always return 1.0, which will make flee check fail (high random = no flee)
+
+      try {
+        // @ts-expect-error - accessing internal function for testing
+        await safariModule.__DO_NOT_USE__doEndTurn?.(0);
+      } finally {
+        Math.random = originalMathRandom;
+      }
+
+      // Should NOT call leaveEncounterWithoutBattle since safariPokemonRemaining > 0
+      expect(leaveEncounterWithoutBattleSpy).not.toHaveBeenCalled();
+      // Should call initSubsequentOptionSelect to continue the encounter
+      expect(initSubsequentOptionSelectSpy).toHaveBeenCalled();
+    });
+  });
+
   describe("Option 2 - Leave", () => {
     it("should have the correct properties", () => {
       const option = SafariZoneEncounter.options[1];
