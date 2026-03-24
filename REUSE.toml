@@ -15,6 +15,8 @@ path = [
     "test/**/*.json",
     "src/**/*.jsonc",
     "global.d.ts",
+    # API endpoints
+    "api/**/*.ts",
     # HTML / CSS at the top level, or in `tests`
     "*.html",
     "*.css",
@@ -47,6 +49,8 @@ path = [
     # Configuration files
     ".editorconfig",
     ".vscode/**/*.json",
+    ".vercelignore",
+    "vercel.json",
     # any pokerogue save files for tests
     "**/*.prsv",
     # pnpm related files of insignificant originality
@@ -56,6 +60,9 @@ path = [
     # Miscellaneous files of insignificant originality
     ".nvmrc",
     "RELEASE",
+    # Vercel deployment files
+    "deploy-vercel.sh",
+    "vercel.json",
 ]
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "NONE"
