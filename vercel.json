@@ -1,6 +1,12 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "pnpm install --ignore-scripts && pnpm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "installCommand": "npm install --ignore-scripts"
+  "framework": null,
+  "installCommand": "pnpm install --ignore-scripts",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
 }
