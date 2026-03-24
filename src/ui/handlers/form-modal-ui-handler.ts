@@ -6,6 +6,7 @@ import { ModalUiHandler } from "#ui/modal-ui-handler";
 import { addTextInputObject, addTextObject, getTextColor } from "#ui/text";
 import { addWindow, WindowVariant } from "#ui/ui-theme";
 import { fixedInt, truncateString } from "#utils/common";
+import i18next from "i18next";
 import type Phaser from "phaser";
 import type InputText from "phaser3-rex-plugins/plugins/inputtext";
 
@@ -46,10 +47,37 @@ export abstract class FormModalUiHandler extends ModalUiHandler {
       return "";
     }
 
-    if (error.includes("connection refused")) {
-      return "Could not connect to the server";
+    // Network and connection errors
+    if (error.includes("connection refused") || error.includes("Network error")) {
+      return i18next.t("menu:connectionFailed", { defaultValue: "Could not connect to the server" });
     }
 
+    // Common authentication errors
+    if (error.includes("invalid username")) {
+      return i18next.t("menu:invalidUsername", { defaultValue: "Invalid username" });
+    }
+    if (error.includes("invalid password")) {
+      return i18next.t("menu:invalidPassword", { defaultValue: "Invalid password" });
+    }
+    if (error.includes("unauthorized") || error.includes("Unauthorized")) {
+      return i18next.t("menu:unauthorized", { defaultValue: "Invalid credentials" });
+    }
+
+    // Rate limiting
+    if (error.includes("rate limit") || error.includes("too many")) {
+      return i18next.t("menu:rateLimited", { defaultValue: "Too many attempts. Please wait and try again." });
+    }
+
+    // Server errors
+    if (error.includes("500") || error.includes("Internal Server Error")) {
+      return i18next.t("menu:serverError", { defaultValue: "Server error. Please try again later." });
+    }
+    if (error.includes("503") || error.includes("Service Unavailable")) {
+      return i18next.t("menu:serviceUnavailable", { defaultValue: "Service temporarily unavailable." });
+    }
+
+    // Return the original error if no specific mapping exists
+    // This exposes the server's error message to help users understand what went wrong
     return error;
   }
 

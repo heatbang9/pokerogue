@@ -47,12 +47,13 @@ export class PokerogueAccountApi extends ApiBase {
       if (response.ok) {
         return null;
       }
-      return response.text();
+      const errorText = await response.text();
+      // Return the actual error from the server for better UX
+      return errorText || `Registration failed (${response.status})`;
     } catch (err) {
       console.warn("Register failed!", err);
+      return `Network error: ${err instanceof Error ? err.message : "Unknown error"}`;
     }
-
-    return "Unknown registration error!";
   }
 
   /**
@@ -71,12 +72,13 @@ export class PokerogueAccountApi extends ApiBase {
         return null;
       }
       console.warn("Login failed!", response.status, response.statusText);
-      return response.text();
+      const errorText = await response.text();
+      // Return the actual error from the server for better UX
+      return errorText || `Login failed (${response.status})`;
     } catch (err) {
       console.warn("Login failed!", err);
+      return `Network error: ${err instanceof Error ? err.message : "Unknown error"}`;
     }
-
-    return "Unknown login error!";
   }
 
   /**
@@ -104,11 +106,12 @@ export class PokerogueAccountApi extends ApiBase {
         return null;
       }
       console.warn("Change password failed!", response.status, response.statusText);
-      return response.text();
+      const errorText = await response.text();
+      // Return the actual error from the server for better UX
+      return errorText || `Password change failed (${response.status})`;
     } catch (err) {
       console.warn("Change password failed!", err);
+      return `Network error: ${err instanceof Error ? err.message : "Unknown error"}`;
     }
-
-    return "Unknown error!";
   }
 }
