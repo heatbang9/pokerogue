@@ -107,7 +107,11 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
           return onFail(i18next.t("menu:passwordNotMatchingConfirmPassword"));
         }
         const [usernameInput, emailInput, passwordInput] = this.inputs;
-        const registerData: AccountRegisterRequest = {
+        const registerData: {
+          username: string;
+          password: string;
+          email?: string;
+        } = {
           username: usernameInput.text,
           password: passwordInput.text,
         };
