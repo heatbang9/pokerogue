@@ -327,6 +327,8 @@ export class InputsController {
     this.ensureKeyboardIsInit();
     const buttonDown = getButtonWithKeycode(this.getActiveConfig(Device.KEYBOARD)!, event.keyCode);
     if (buttonDown != null) {
+      // Prevent Firefox's Quick Find feature from triggering on game keybinds
+      event.preventDefault();
       if (this.buttonLock.includes(buttonDown)) {
         return;
       }
