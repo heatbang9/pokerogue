@@ -29,6 +29,7 @@ export interface AccountLoginResponse {
 export interface AccountRegisterRequest {
   username: string;
   password: string;
+  email?: string;
 }
 
 export interface AccountChangePwRequest {

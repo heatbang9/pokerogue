@@ -52,6 +52,10 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
     const inputFieldConfigs: InputFieldConfig[] = [];
     inputFieldConfigs.push({ label: i18next.t("menu:username") });
     inputFieldConfigs.push({
+      label: i18next.t("menu:email"),
+      isOptional: true,
+    });
+    inputFieldConfigs.push({
       label: i18next.t("menu:password"),
       isPassword: true,
     });
@@ -95,17 +99,18 @@ export class RegistrationFormUiHandler extends LoginRegisterInfoContainerUiHandl
         if (!this.inputs[0].text) {
           return onFail(i18next.t("menu:emptyUsername"));
         }
-        if (!this.inputs[1].text) {
+        if (!this.inputs[2].text) {
           return onFail(this.getReadableErrorMessage("invalid password"));
         }
-        if (this.inputs[1].text !== this.inputs[2].text) {
+        if (this.inputs[2].text !== this.inputs[3].text) {
           return onFail(i18next.t("menu:passwordNotMatchingConfirmPassword"));
         }
-        const [usernameInput, passwordInput] = this.inputs;
+        const [usernameInput, emailInput, passwordInput] = this.inputs;
         pokerogueApi.account
           .register({
             username: usernameInput.text,
             password: passwordInput.text,
+            email: emailInput.text || undefined,
           })
           .then(registerError => {
             if (registerError) {
