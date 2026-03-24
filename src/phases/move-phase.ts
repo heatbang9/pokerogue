@@ -27,7 +27,7 @@ import { StatusEffect } from "#enums/status-effect";
 import { MoveUsedEvent } from "#events/battle-scene";
 import type { Pokemon } from "#field/pokemon";
 import { applyMoveAttrs } from "#moves/apply-attrs";
-import { frenzyMissFunc } from "#moves/move-utils";
+import { frenzyMissFunc, getMoveTargets } from "#moves/move-utils";
 import type { PokemonMove } from "#moves/pokemon-move";
 import type { Move, PreUseInterruptAttr } from "#types/move-types";
 import type { TurnMove } from "#types/turn-move";
@@ -185,6 +185,7 @@ export class MovePhase extends PokemonPhase {
 
     this.resolveRedirectTarget();
     this.resolveCounterAttackTarget();
+    this.resolveVariableTarget();
 
     // If this is the *release* turn of the charge move, PP is not deducted
     const move = this.move.getMove();
@@ -635,6 +636,33 @@ export class MovePhase extends PokemonPhase {
     if (targetHolder.value === BattlerIndex.ATTACKER) {
       this.fail();
     }
+  }
+
+  /**
+   * Re-evaluate variable target moves (like Expanding Force) to account for terrain changes
+   * that occurred between command phase and move execution.
+   *
+   * This fixes bug #4969 where Expanding Force's target was determined at command phase
+   * instead of at move usage time.
+   */
+  protected resolveVariableTarget(): void {
+    const move = this.move.getMove();
+
+    if (!move.hasAttr("VariableTargetAttr")) {
+      return;
+    }
+
+    const user = this.pokemon;
+    const variableTarget = new NumberHolder(0);
+
+    // Apply VariableTargetAttr to get the new target type
+    applyMoveAttrs("VariableTargetAttr", user, null, move, variableTarget);
+
+    // Get the new targets based on the variable target
+    const newTargets = getMoveTargets(user, move.id, variableTarget.value);
+
+    // Update this phase's targets
+    this.targets = newTargets.targets;
   }
 
   /**

@@ -67,9 +67,12 @@ export class TrainerVictoryPhase extends BattlePhase {
       () => {
         const victoryMessages = globalScene.currentBattle.trainer?.getVictoryMessages()!; // TODO: is this bang correct?
         let message: string;
+        // Use trainer type in seed offset to ensure different trainers have different dialogue variations
+        // Also use a different offset than encounter (waveIndex + trainerType * 1000 + 500) to allow victory dialogue to vary independently
+        const trainerTypeSeed = (globalScene.currentBattle.trainer?.config?.trainerType ?? 0) * 1000;
         globalScene.executeWithSeedOffset(
           () => (message = randSeedItem(victoryMessages)),
-          globalScene.currentBattle.waveIndex,
+          globalScene.currentBattle.waveIndex + trainerTypeSeed + 500,
         );
         message = message!; // tell TS compiler it's defined now
 
