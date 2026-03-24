@@ -7227,7 +7227,7 @@ export class ForceSwitchOutAttr extends MoveEffectAttr {
   private readonly switchType: SwitchType;
 
   constructor(selfSwitch = false, switchType: SwitchType = SwitchType.SWITCH) {
-    super(false, { lastHitOnly: true });
+    super(selfSwitch, { lastHitOnly: true });
 
     this.selfSwitch = selfSwitch;
     this.switchType = switchType;
