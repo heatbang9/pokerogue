@@ -47,3 +47,4 @@ coverage
 # Script outputs
 *.csv
 .vercel
+.env*.local
