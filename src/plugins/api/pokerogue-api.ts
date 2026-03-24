@@ -78,4 +78,10 @@ export class PokerogueApi extends ApiBase {
   //#endregion
 }
 
-export const pokerogueApi = new PokerogueApi(import.meta.env.VITE_SERVER_URL ?? "http://localhost:8001");
+// In production, use the current domain. In development, use localhost.
+const defaultBaseUrl =
+  typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? "" // Use relative URLs in production (same domain)
+    : "http://localhost:8001"; // Use localhost in development
+
+export const pokerogueApi = new PokerogueApi(import.meta.env.VITE_SERVER_URL ?? defaultBaseUrl);
