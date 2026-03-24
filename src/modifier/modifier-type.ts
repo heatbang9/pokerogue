@@ -1300,6 +1300,10 @@ class AttackTypeBoosterModifierTypeGenerator extends ModifierTypeGenerator {
           if (!move.is("AttackMove")) {
             continue;
           }
+          // Skip fixed-damage moves (Counter, Night Shade, etc.) as they don't benefit from type boosters
+          if (move.hasAttr("FixedDamageAttr")) {
+            continue;
+          }
           // Account for variable type changing moves
           // Get a variable type attribute of the move
           const variableTypeAttr = move.getAttrs("VariableMoveTypeAttr")[0];
