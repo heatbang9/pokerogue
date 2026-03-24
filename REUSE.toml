@@ -15,6 +15,8 @@ path = [
     "test/**/*.json",
     "src/**/*.jsonc",
     "global.d.ts",
+    # API endpoints
+    "api/**/*.ts",
     # HTML / CSS at the top level, or in `tests`
     "*.html",
     "*.css",
@@ -32,6 +34,8 @@ path = [
     ".env.*",
     # Development files considered code
     ".vscode/*.json",
+    # GitHub Actions workflows
+    ".github/workflows/**/*.yml",
 ]
 SPDX-FileCopyrightText = "2024-2025 Pagefault Games"
 SPDX-License-Identifier = "AGPL-3.0-only"
@@ -47,6 +51,8 @@ path = [
     # Configuration files
     ".editorconfig",
     ".vscode/**/*.json",
+    ".vercelignore",
+    "vercel.json",
     # any pokerogue save files for tests
     "**/*.prsv",
     # pnpm related files of insignificant originality

@@ -157,6 +157,7 @@ export const SettingKeys = {
   Money_Format: "MONEY_FORMAT",
   Damage_Numbers: "DAMAGE_NUMBERS",
   Move_Animations: "MOVE_ANIMATIONS",
+  Weather_Animations: "WEATHER_ANIMATIONS",
   Show_Stats_on_Level_Up: "SHOW_LEVEL_UP_STATS",
   Shop_Cursor_Target: "SHOP_CURSOR_TARGET",
   Command_Cursor_Memory: "COMMAND_CURSOR_MEMORY",
@@ -489,6 +490,13 @@ export const Setting: Setting[] = [
   {
     key: SettingKeys.Move_Animations,
     label: i18next.t("settings:moveAnimations"),
+    options: OFF_ON,
+    default: 1,
+    type: SettingType.DISPLAY,
+  },
+  {
+    key: SettingKeys.Weather_Animations,
+    label: i18next.t("settings:weatherAnimations"),
     options: OFF_ON,
     default: 1,
     type: SettingType.DISPLAY,
@@ -854,6 +862,9 @@ export function setSetting(setting: string, value: number): boolean {
       break;
     case SettingKeys.Move_Animations:
       globalScene.moveAnimations = Setting[index].options[value].value === "On";
+      break;
+    case SettingKeys.Weather_Animations:
+      globalScene.weatherAnimations = Setting[index].options[value].value === "On";
       break;
     case SettingKeys.Show_Moveset_Flyout:
       globalScene.showMovesetFlyout = Setting[index].options[value].value === "On";
