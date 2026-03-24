@@ -61,8 +61,10 @@ export function getPokerusStarters(): PokemonSpecies[] {
 }
 
 export function getFusedSpeciesName(speciesAName: string, speciesBName: string): string {
-  const fragAPattern = /([a-z]{2}.*?[aeiou(?:y$)\-']+)(.*?)$/i;
-  const fragBPattern = /([a-z]{2}.*?[aeiou(?:y$)\-'])(.*?)$/i;
+  // Using Unicode property escapes to support non-English characters (e.g., É in Élekable)
+  // \p{L} matches any letter, \p{M} matches combining marks (accents)
+  const fragAPattern = /([\p{L}]{2}.*?[aeiouàèìòùáéíóúäëïöüâêîôûãõåæœ(?:y$)\-']+)(.*?)$/iu;
+  const fragBPattern = /([\p{L}]{2}.*?[aeiouàèìòùáéíóúäëïöüâêîôûãõåæœ(?:y$)\-'])(.*?)$/iu;
 
   const [speciesAPrefixMatch, speciesBPrefixMatch] = [speciesAName, speciesBName].map(n => /^(?:[^ ]+) /.exec(n));
   const [speciesAPrefix, speciesBPrefix] = [speciesAPrefixMatch, speciesBPrefixMatch].map(m => (m ? m[0] : ""));
