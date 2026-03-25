@@ -62,18 +62,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const session = typeof sessionData === "string" ? JSON.parse(sessionData) : sessionData;
 
     // Support both JSON and form-urlencoded
-    let password: string | undefined;
+    let newPassword: string | undefined;
+    let currentPassword: string | undefined;
 
     if (typeof req.body === "object" && req.body !== null) {
       // JSON body (already parsed by Vercel)
-      password = req.body.password;
+      newPassword = req.body.newPassword;
+      currentPassword = req.body.currentPassword;
     } else if (typeof req.body === "string") {
       // form-urlencoded - parse manually
       const params = new URLSearchParams(req.body);
-      password = params.get("password") ?? undefined;
+      newPassword = params.get("newPassword") ?? undefined;
+      currentPassword = params.get("currentPassword") ?? undefined;
     }
 
-    if (!password || password.length < 8) {
+    if (!newPassword || newPassword.length < 8) {
       return res.status(400).json({ status: "error", error: "Password must be at least 8 characters" });
     }
 
@@ -85,9 +88,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const user = typeof userData === "string" ? JSON.parse(userData) : userData;
 
+    // Verify current password if provided
+    if (currentPassword) {
+      const currentHash = await hashPassword(currentPassword, user.salt);
+      if (currentHash !== user.passwordHash) {
+        return res.status(401).json({ status: "error", error: "Current password is incorrect" });
+      }
+    }
+
     // Update password
     const newSalt = generateSalt();
-    const newPasswordHash = await hashPassword(password, newSalt);
+    const newPasswordHash = await hashPassword(newPassword, newSalt);
 
     user.salt = newSalt;
     user.passwordHash = newPasswordHash;
