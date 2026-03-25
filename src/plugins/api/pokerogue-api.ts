@@ -79,9 +79,13 @@ export class PokerogueApi extends ApiBase {
 }
 
 // In production, use the current origin with /api path. In development, use localhost.
+const serverUrl = import.meta.env.VITE_SERVER_URL;
 const defaultBaseUrl =
   typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? `${window.location.origin}/api` // Use current origin with /api path (e.g., https://pokerogue-hogoo.vercel.app/api)
+    ? `${window.location.origin}/api` // Use current origin with /api path
     : "http://localhost:8001"; // Use localhost in development
 
-export const pokerogueApi = new PokerogueApi(import.meta.env.VITE_SERVER_URL ?? defaultBaseUrl);
+// If VITE_SERVER_URL is set, ensure it ends with /api for our endpoints
+const baseUrl = serverUrl ? (serverUrl.endsWith("/api") ? serverUrl : `${serverUrl}/api`) : defaultBaseUrl;
+
+export const pokerogueApi = new PokerogueApi(baseUrl);
