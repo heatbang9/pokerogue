@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 The Pokerogue Team
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { Redis } from "@upstash/redis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
@@ -44,7 +47,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { username, password } = req.body;
+    // Support both JSON and form-urlencoded
+    let username: string | undefined;
+    let password: string | undefined;
+
+    if (typeof req.body === "object" && req.body !== null) {
+      // JSON body (already parsed by Vercel)
+      username = req.body.username;
+      password = req.body.password;
+    } else if (typeof req.body === "string") {
+      // form-urlencoded - parse manually
+      const params = new URLSearchParams(req.body);
+      username = params.get("username") ?? undefined;
+      password = params.get("password") ?? undefined;
+    }
 
     if (!username || !password) {
       return res.status(400).json({ status: "error", error: "Username and password required" });

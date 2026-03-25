@@ -37,6 +37,7 @@ export class PokerogueAccountApi extends ApiBase {
 
   /**
    * Register a new account.
+   * Sets the session cookie on success.
    * @param registerData The {@linkcode AccountRegisterRequest} to send
    * @returns An error message if something went wrong
    */
@@ -45,8 +46,11 @@ export class PokerogueAccountApi extends ApiBase {
       const response = await this.doPost("/account/register", registerData, "form-urlencoded");
 
       if (response.ok) {
+        const registerResponse = (await response.json()) as AccountLoginResponse;
+        setCookie(SESSION_ID_COOKIE_NAME, registerResponse.token);
         return null;
       }
+      console.warn("Register failed!", response.status, response.statusText);
       return response.text();
     } catch (err) {
       console.warn("Register failed!", err);

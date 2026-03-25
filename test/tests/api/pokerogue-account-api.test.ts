@@ -67,12 +67,14 @@ describe("Pokerogue Account API", () => {
   describe("Register", () => {
     const registerParams = { username: "test", password: "test" };
 
-    it("should return null on SUCCESS", async () => {
-      server.use(http.post(`${apiBase}/account/register`, () => HttpResponse.text()));
+    it("should return null and set the cookie on SUCCESS", async () => {
+      vi.spyOn(CookieUtils, "setCookie");
+      server.use(http.post(`${apiBase}/account/register`, () => HttpResponse.json({ token: "abctest" })));
 
       const error = await accountApi.register(registerParams);
 
       expect(error).toBeNull();
+      expect(cookies.setCookie).toHaveBeenCalledWith(SESSION_ID_COOKIE_NAME, "abctest");
     });
 
     it("should return error message on FAILURE", async () => {
