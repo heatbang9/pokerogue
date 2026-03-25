@@ -11,14 +11,14 @@ const redis = new Redis({
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  if (req.method !== "POST") {
+  if (req.method !== "GET") {
     return res.status(405).json({ status: "error", error: "Method not allowed" });
   }
 
@@ -36,26 +36,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const session = typeof sessionData === "string" ? JSON.parse(sessionData) : sessionData;
     const slot = req.query.slot || "0";
 
-    // Get raw body data - client sends raw string
-    let sessionSaveData: string;
-    if (typeof req.body === "string") {
-      sessionSaveData = req.body;
-    } else if (typeof req.body === "object") {
-      sessionSaveData = JSON.stringify(req.body);
-    } else {
-      return res.status(400).send("No session data provided");
-    }
-
-    if (!sessionSaveData) {
-      return res.status(400).send("No session data provided");
-    }
-
-    // Save raw string to Redis (use different key to avoid conflict with auth session)
-    await redis.set(`savedata:${session.username}:${slot}`, sessionSaveData);
+    // Delete session data
+    await redis.del(`savedata:${session.username}:${slot}`);
 
     return res.status(200).send("1"); // Client expects "1" on success
   } catch (error) {
-    console.error("Session update error:", error);
+    console.error("Session delete error:", error);
     return res.status(500).send("Internal server error");
   }
 }

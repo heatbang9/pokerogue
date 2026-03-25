@@ -25,27 +25,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ status: "error", error: "No authorization token" });
+      return res.status(401).send("No authorization token");
     }
 
     const sessionData = await redis.get(`session:${authHeader}`);
     if (!sessionData) {
-      return res.status(401).json({ status: "error", error: "Invalid or expired session" });
+      return res.status(401).send("Invalid or expired session");
     }
 
     const session = typeof sessionData === "string" ? JSON.parse(sessionData) : sessionData;
     const slot = req.query.slot || "0";
-    const sessionSaveData = await redis.get(`session:${session.username}:${slot}`);
+    const sessionSaveData = await redis.get(`savedata:${session.username}:${slot}`);
 
     if (!sessionSaveData) {
-      return res.status(200).json({ session: null });
+      return res.status(200).send(""); // Empty string for no data
     }
 
-    return res
-      .status(200)
-      .json({ session: typeof sessionSaveData === "string" ? JSON.parse(sessionSaveData) : sessionSaveData });
+    // Return raw string (client expects this format)
+    const data = typeof sessionSaveData === "string" ? sessionSaveData : JSON.stringify(sessionSaveData);
+    return res.status(200).send(data);
   } catch (error) {
     console.error("Session get error:", error);
-    return res.status(500).json({ status: "error", error: "Internal server error" });
+    return res.status(500).send("Internal server error");
   }
 }

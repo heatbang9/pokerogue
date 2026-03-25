@@ -11,51 +11,37 @@ const redis = new Redis({
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  if (req.method !== "POST") {
+  if (req.method !== "GET") {
     return res.status(405).json({ status: "error", error: "Method not allowed" });
   }
 
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).send("No authorization token");
+      return res.status(401).json({ newclear: false });
     }
 
     const sessionData = await redis.get(`session:${authHeader}`);
     if (!sessionData) {
-      return res.status(401).send("Invalid or expired session");
+      return res.status(401).json({ newclear: false });
     }
 
     const session = typeof sessionData === "string" ? JSON.parse(sessionData) : sessionData;
     const slot = req.query.slot || "0";
 
-    // Get raw body data - client sends raw string
-    let sessionSaveData: string;
-    if (typeof req.body === "string") {
-      sessionSaveData = req.body;
-    } else if (typeof req.body === "object") {
-      sessionSaveData = JSON.stringify(req.body);
-    } else {
-      return res.status(400).send("No session data provided");
-    }
+    // Check if this session slot has a "newclear" flag
+    const newclearData = await redis.get(`newclear:${session.username}:${slot}`);
 
-    if (!sessionSaveData) {
-      return res.status(400).send("No session data provided");
-    }
-
-    // Save raw string to Redis (use different key to avoid conflict with auth session)
-    await redis.set(`savedata:${session.username}:${slot}`, sessionSaveData);
-
-    return res.status(200).send("1"); // Client expects "1" on success
+    return res.status(200).json(Boolean(newclearData));
   } catch (error) {
-    console.error("Session update error:", error);
-    return res.status(500).send("Internal server error");
+    console.error("Session newclear error:", error);
+    return res.status(500).json({ newclear: false });
   }
 }

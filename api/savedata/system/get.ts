@@ -25,24 +25,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ status: "error", error: "No authorization token" });
+      return res.status(401).send("No authorization token");
     }
 
     const sessionData = await redis.get(`session:${authHeader}`);
     if (!sessionData) {
-      return res.status(401).json({ status: "error", error: "Invalid or expired session" });
+      return res.status(401).send("Invalid or expired session");
     }
 
     const session = typeof sessionData === "string" ? JSON.parse(sessionData) : sessionData;
     const systemData = await redis.get(`system:${session.username}`);
 
     if (!systemData) {
-      return res.status(200).json({ system: null });
+      return res.status(200).send(""); // Empty string for no data
     }
 
-    return res.status(200).json({ system: typeof systemData === "string" ? JSON.parse(systemData) : systemData });
+    // Return raw string (client expects this format)
+    const data = typeof systemData === "string" ? systemData : JSON.stringify(systemData);
+    return res.status(200).send(data);
   } catch (error) {
     console.error("System get error:", error);
-    return res.status(500).json({ status: "error", error: "Internal server error" });
+    return res.status(500).send("Internal server error");
   }
 }

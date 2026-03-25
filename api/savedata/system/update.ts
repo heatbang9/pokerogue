@@ -25,40 +25,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ status: "error", error: "No authorization token" });
+      return res.status(401).send("No authorization token");
     }
 
     const sessionData = await redis.get(`session:${authHeader}`);
     if (!sessionData) {
-      return res.status(401).json({ status: "error", error: "Invalid or expired session" });
+      return res.status(401).send("Invalid or expired session");
     }
 
     const session = typeof sessionData === "string" ? JSON.parse(sessionData) : sessionData;
 
-    let systemData: any = null;
-    if (typeof req.body === "object" && req.body !== null) {
-      systemData = req.body.system || req.body;
-    } else if (typeof req.body === "string") {
-      const params = new URLSearchParams(req.body);
-      const system = params.get("system");
-      if (system) {
-        try {
-          systemData = JSON.parse(system);
-        } catch {
-          systemData = req.body;
-        }
-      }
+    // Get raw body data - client sends raw string
+    let systemData: string;
+    if (typeof req.body === "string") {
+      systemData = req.body;
+    } else if (typeof req.body === "object") {
+      systemData = JSON.stringify(req.body);
+    } else {
+      return res.status(400).send("No system data provided");
     }
 
     if (!systemData) {
-      return res.status(400).json({ status: "error", error: "No system data provided" });
+      return res.status(400).send("No system data provided");
     }
 
-    await redis.set(`system:${session.username}`, JSON.stringify(systemData));
+    // Save raw string to Redis
+    await redis.set(`system:${session.username}`, systemData);
 
-    return res.status(200).json({ success: true });
+    return res.status(200).send("1"); // Client expects "1" on success
   } catch (error) {
     console.error("System update error:", error);
-    return res.status(500).json({ status: "error", error: "Internal server error" });
+    return res.status(500).send("Internal server error");
   }
 }
