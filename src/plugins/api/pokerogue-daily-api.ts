@@ -1,5 +1,5 @@
 import { ApiBase } from "#api/api-base";
-import type { GetDailyRankingsPageCountRequest, GetDailyRankingsRequest } from "#types/pokerogue-daily-api";
+import type { GetDailyRankingsPageCountRequest, GetDailyRankingsRequest, SubmitDailyScoreRequest } from "#types/pokerogue-daily-api";
 import type { RankingEntry } from "#ui/daily-run-scoreboard";
 
 /**
@@ -52,6 +52,21 @@ export class PokerogueDailyApi extends ApiBase {
     } catch (err) {
       console.warn("Could not get daily rankings page count!", err);
       return 1;
+    }
+  }
+
+  /**
+   * Submit a daily run score to the leaderboard.
+   * @param params The {@linkcode SubmitDailyScoreRequest} to send.
+   * @returns `true` if submission was successful, `false` otherwise.
+   */
+  public async submitScore(params: SubmitDailyScoreRequest) {
+    try {
+      const response = await this.doPost("/daily/submit", params);
+      return response.ok;
+    } catch (err) {
+      console.warn("Could not submit daily score!", err);
+      return false;
     }
   }
 }

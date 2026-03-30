@@ -10,3 +10,10 @@ export interface GetDailyRankingsRequest {
 export interface GetDailyRankingsPageCountRequest {
   category: ScoreboardCategory;
 }
+
+/** Score submission request for daily runs */
+export interface SubmitDailyScoreRequest {
+  score: number;
+  wave: number;
+  isDaily?: boolean;
+}

@@ -182,6 +182,16 @@ export class GameOverPhase extends BattlePhase {
           } else if (globalScene.gameMode.isDaily && newClear) {
             globalScene.gameData.gameStats.dailyRunSessionsWon++;
             globalScene.validateAchv(achvs.DAILY_VICTORY);
+            // Submit score to daily rankings
+            if (!bypassLogin || isLocalServerConnected) {
+              pokerogueApi.daily
+                .submitScore({
+                  score: globalScene.score,
+                  wave: globalScene.currentBattle.waveIndex,
+                  isDaily: true,
+                })
+                .catch(err => console.warn("Failed to submit daily score:", err));
+            }
           }
         }
 

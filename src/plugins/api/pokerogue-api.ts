@@ -75,6 +75,20 @@ export class PokerogueApi extends ApiBase {
     return false;
   }
 
+  /**
+   * Increment the global battle counter for title stats.
+   * @returns `true` if successful, `false` otherwise.
+   */
+  public async incrementBattleCount() {
+    try {
+      const response = await this.doPost("/game/battle");
+      return response.ok;
+    } catch (err) {
+      // Silent fail - not critical
+      return false;
+    }
+  }
+
   //#endregion
 }
 

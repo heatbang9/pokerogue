@@ -11,31 +11,24 @@ const redis = new Redis({
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
+  if (req.method !== "POST") {
+    return res.status(405).json({ status: "error", error: "Method not allowed" });
+  }
+
   try {
-    // Count active sessions
-    // Note: For production scale, consider maintaining a separate counter
-    const sessionKeys = await redis.keys("session:*");
-    const playerCount = sessionKeys.length;
+    // Increment battle counter
+    await redis.incr("stats:battles:total");
 
-    // Get total battle count
-    const battleCount = (await redis.get("stats:battles:total")) as number | null;
-
-    return res.status(200).json({
-      playerCount,
-      battleCount: battleCount || 0,
-    });
+    return res.status(200).json({ status: "success" });
   } catch (error) {
-    console.error("Title stats error:", error);
-    return res.status(200).json({
-      playerCount: 0,
-      battleCount: 0,
-    });
+    console.error("Battle count error:", error);
+    return res.status(500).json({ status: "error", error: "Internal server error" });
   }
 }

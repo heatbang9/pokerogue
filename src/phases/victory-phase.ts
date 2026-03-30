@@ -1,5 +1,6 @@
 import { timedEventManager } from "#app/global-event-manager";
 import { globalScene } from "#app/global-scene";
+import { pokerogueApi } from "#api/pokerogue-api";
 import { modifierTypes } from "#data/data-lists";
 import { BattleType } from "#enums/battle-type";
 import type { BattlerIndex } from "#enums/battler-index";
@@ -45,6 +46,8 @@ export class VictoryPhase extends PokemonPhase {
       if (globalScene.currentBattle.battleType === BattleType.TRAINER) {
         globalScene.phaseManager.pushNew("TrainerVictoryPhase");
       }
+      // Increment server battle count
+      pokerogueApi.incrementBattleCount().catch(() => {});
 
       const gameMode = globalScene.gameMode;
       const currentWaveIndex = globalScene.currentBattle.waveIndex;
