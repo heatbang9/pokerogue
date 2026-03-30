@@ -73,7 +73,7 @@ describe("Transforming Effects", () => {
     });
 
     // TODO: This is not implemented
-    it.todo("should copy the target's original typing if target is typeless", async () => {
+    it("should copy the target's original typing if target is typeless", async () => {
       game.override.enemySpecies(SpeciesId.MAGMAR);
       await game.classicMode.startBattle(SpeciesId.DITTO);
 
