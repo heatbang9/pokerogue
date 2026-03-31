@@ -1359,7 +1359,9 @@ export class PokedexUiHandler extends MessageUiHandler {
           break;
         case Button.CYCLE_FORM: {
           const species = this.pokemonContainers[this.cursor].species;
-          if (this.canShowFormTray) {
+          if (this.blockOpenPage) {
+            error = true;
+          } else if (this.canShowFormTray) {
             success = this.openFormTray(species);
           }
           break;
