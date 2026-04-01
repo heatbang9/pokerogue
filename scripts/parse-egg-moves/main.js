@@ -13,12 +13,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { Command } from "@commander-js/extra-typings";
 import chalk from "chalk";
-import { showHelpText } from "./help-message.js";
 import { runInteractive } from "./interactive.js";
 import { parseEggMoves } from "./parse.js";
 
 const version = "1.0.1";
+const program = new Command();
 
 // Get the directory name of the current module file
 const __filename = fileURLToPath(import.meta.url);
@@ -39,21 +40,23 @@ const eggMoveTargetPath = path.join(projectRoot, "src/data/balance/egg-moves.ts"
  * @returns {Promise<void>}
  */
 async function start() {
+  program
+    .name("eggMoves:parse")
+    .description("Parse egg moves from CSV and generate TypeScript file")
+    .version(version)
+    .option("-f, --file <path>", "Input CSV file path")
+    .option("-t, --text <csv>", "CSV text input")
+    .option("-c, --console <csv>", "CSV text input (alias for --text)")
+    .option("-i, --interactive", "Run in interactive mode")
+    .parse(process.argv);
+
   console.log(chalk.yellow(`🥚 Egg Move Parser - v${version}`));
 
-  if (process.argv.length > 4) {
-    console.error(
-      chalk.redBright.bold(
-        `✗ Error: Too many arguments provided!\nArgs: ${chalk.hex("#7310fdff")(process.argv.slice(2).join(" "))}`,
-      ),
-    );
-    showHelpText();
-    process.exitCode = 1;
-    return;
-  }
+  /** @type {{file?: string, text?: string, console?: string, interactive?: boolean}} */
+  const options = program.opts();
 
   let csv = "";
-  const inputType = await parseArguments();
+  const inputType = await handleInput(options);
   // If exit code was set, return to allow it to propagate it up the chain.
   if (process.exitCode != null) {
     return;
@@ -73,67 +76,22 @@ async function start() {
 }
 
 /**
- * Handle the arguments passed to the script and obtain the CSV input type.
+ * Handle the input method based on command options.
+ * @param {{file?: string, text?: string, console?: string, interactive?: boolean}} options - The parsed command options
  * @returns {Promise<{type: "Console" | "File", value: string} | {type: "Exit"}>} The input method selected by the user
  */
-async function parseArguments() {
-  const args = process.argv.slice(2); // first 2 args are node and script name (irrelevant)
-
-  // Yoink everything up to the first "=" to get the raw command, using nullish coaclescing to convert
-  // "no args" into "undefined"
-  /** @type {string | undefined}  */
-  const arg = args[0]?.split("=")[0];
-  switch (arg) {
-    case "-f":
-    case "--file":
-      return { type: "File", value: getArgValue() };
-    case "-t":
-    case "--text":
-    case "-c":
-    case "--console":
-      return { type: "Console", value: getArgValue() };
-    case "-h":
-    case "--help":
-      showHelpText();
-      process.exitCode = 0;
-      return { type: "Exit" };
-    case "--interactive":
-    case "-i":
-    case undefined:
-      return await runInteractive();
-    default:
-      // If no arguments are found, check if it's a file path
-      if (fs.existsSync(arg)) {
-        console.log(chalk.green(`Using file path from stdin: ${chalk.blue(arg)}`));
-        return { type: "File", value: arg };
-      }
-      badArgs();
-      return { type: "Exit" };
+async function handleInput(options) {
+  if (options.file) {
+    return { type: "File", value: options.file };
   }
-}
-
-/**
- * Get the value of the argument provided.
- * @returns {string} The CSV or file path from the arguments
- * @throws {Error} If arguments are malformed
- */
-function getArgValue() {
-  // If the user provided a value as argument 2, take that as the argument.
-  // Otherwise, check the 1st argument to see if it contains an `=` and extract everything afterwards.
-  /** @type {string | undefined} */
-  let filePath = process.argv[3];
-  const equalsIndex = process.argv[2].indexOf("=");
-  if (equalsIndex > -1) {
-    // If arg 3 was aleady existing and someone used `=` notation to assign a property, throw an error.
-    filePath = filePath ? undefined : process.argv[2].slice(equalsIndex + 1);
+  if (options.text) {
+    return { type: "Console", value: options.text };
   }
-
-  if (!filePath?.trim()) {
-    badArgs();
-    return "";
+  if (options.console) {
+    return { type: "Console", value: options.console };
   }
-  // NB: It doesn't really matter that this can be `undefined` - we'll always break out by lieu of setting the exit code
-  return filePath;
+  // Default to interactive mode
+  return await runInteractive();
 }
 
 /**
@@ -159,16 +117,6 @@ export async function writeToFile(moves) {
     console.error(chalk.red(`✗ Error while writing egg moves: ${err}`));
     process.exitCode = 1;
   }
-}
-
-/**
- * Do logging for incorrect or malformed CLI arguments.
- * @returns {void}
- */
-function badArgs() {
-  chalk.red.bold(`✗ Error: Malformed arguments!\nArgs: ${chalk.hex("#7310fdff")(process.argv.slice(2).join(" "))}`);
-  showHelpText();
-  process.exitCode = 1;
 }
 
 await start();
