@@ -31,6 +31,19 @@ export class WeatherEffectPhase extends CommonAnimPhase {
       return this.end();
     }
 
+    // Skip weather animation if disabled in settings
+    if (!globalScene.weatherAnimations) {
+      globalScene.ui.showText(getWeatherLapseMessage(this.weather.weatherType) ?? "", null, () => {
+        this.executeForAll((pokemon: Pokemon) => {
+          if (!pokemon.switchOutStatus) {
+            applyAbAttrs("PostWeatherLapseAbAttr", { pokemon, weather: this.weather });
+          }
+        });
+        this.end();
+      });
+      return;
+    }
+
     this.setAnimation(CommonAnim.SUNNY + (this.weather.weatherType - 1));
 
     if (this.weather.isDamaging()) {
