@@ -374,8 +374,8 @@ export const pokemonFormChanges: PokemonFormChanges = {
     new SpeciesFormChange(SpeciesId.KYUREM, "", "white", new SpeciesFormChangeItemTrigger(FormChangeItem.LIGHT_STONE), false, getSpeciesDependentFormChangeCondition(SpeciesId.RESHIRAM))
   ],
   [SpeciesId.KELDEO]: [
-    new SpeciesFormChange(SpeciesId.KELDEO, "ordinary", "resolute", new SpeciesFormChangeMoveLearnedTrigger(MoveId.SECRET_SWORD), false, new SpeciesFormChangeCondition(() => globalScene.gameMode.isDaily !== true)),
-    new SpeciesFormChange(SpeciesId.KELDEO, "resolute", "ordinary", new SpeciesFormChangeMoveLearnedTrigger(MoveId.SECRET_SWORD, false), false, new SpeciesFormChangeCondition(() => globalScene.gameMode.isDaily !== true))
+    new SpeciesFormChange(SpeciesId.KELDEO, "ordinary", "resolute", new SpeciesFormChangeMoveLearnedTrigger(MoveId.SECRET_SWORD), true, new SpeciesFormChangeCondition(() => globalScene.gameMode.isDaily !== true)),
+    new SpeciesFormChange(SpeciesId.KELDEO, "resolute", "ordinary", new SpeciesFormChangeMoveLearnedTrigger(MoveId.SECRET_SWORD, false), true, new SpeciesFormChangeCondition(() => globalScene.gameMode.isDaily !== true))
   ],
   [SpeciesId.MELOETTA]: [
     new SpeciesFormChange(SpeciesId.MELOETTA, "aria", "pirouette", new MeloettaFormChangePostMoveTrigger(MoveId.RELIC_SONG), true),
@@ -400,10 +400,8 @@ export const pokemonFormChanges: PokemonFormChanges = {
     new SpeciesFormChange(SpeciesId.AEGISLASH, "shield", "blade", new SpeciesFormChangePreMoveTrigger(m => allMoves[m].category !== MoveCategory.STATUS), true, new SpeciesFormChangeCondition(p => p.hasAbility(AbilityId.STANCE_CHANGE))),
     new SpeciesFormChange(SpeciesId.AEGISLASH, "blade", "shield", new SpeciesFormChangeActiveTrigger(false), true)
   ],
-  [SpeciesId.XERNEAS]: [
-    new SpeciesFormChange(SpeciesId.XERNEAS, "neutral", "active", new SpeciesFormChangeActiveTrigger(true), true),
-    new SpeciesFormChange(SpeciesId.XERNEAS, "active", "neutral", new SpeciesFormChangeActiveTrigger(false), true)
-  ],
+  // Xerneas form changes removed - should always be in active form (Issue #6275)
+  // In mainline games, Xerneas is already in active form when sent out
   [SpeciesId.ZYGARDE]: [
     new SpeciesFormChange(SpeciesId.ZYGARDE, "50-pc", "complete", new SpeciesFormChangeAbilityTrigger(), true),
     new SpeciesFormChange(SpeciesId.ZYGARDE, "complete", "50-pc", new SpeciesFormChangeAbilityTrigger(), true),
