@@ -13,8 +13,8 @@ import { applyAbAttrs } from "#abilities/apply-ab-attrs";
 import { loggedInUser } from "#app/account";
 import { globalScene } from "#app/global-scene";
 import { getPokemonNameWithAffix } from "#app/messages";
-import type { EntryHazardTag, PendingHealTag } from "#data/arena-tag";
-import { WeakenMoveTypeTag } from "#data/arena-tag";
+import type { PendingHealTag } from "#data/arena-tag";
+import { EntryHazardTag, WeakenMoveTypeTag } from "#data/arena-tag";
 import { MoveChargeAnim } from "#data/battle-anims";
 import {
   CommandedTag,
@@ -118,7 +118,7 @@ import type {
   MoveMessageFunc,
 } from "#types/move-types";
 import type { TurnMove } from "#types/turn-move";
-import type { AbstractConstructor } from "#types/type-helpers";
+import type { AbstractConstructor, Mutable } from "#types/type-helpers";
 import { coerceArray } from "#utils/array";
 import { applyChallenges } from "#utils/challenge-utils";
 import {
@@ -7081,6 +7081,7 @@ export class SwapArenaTagsAttr extends MoveEffectAttr {
     const tagEnemyTemp = globalScene.arena.findTagsOnSide(t => this.validTags.includes(t.tagType), ArenaTagSide.ENEMY);
 
     for (const playerTag of tagPlayerTemp) {
+      const playerTagLayers = playerTag instanceof EntryHazardTag ? playerTag.layers : 0;
       globalScene.arena.removeTagOnSide(playerTag.tagType, ArenaTagSide.PLAYER, true);
       globalScene.arena.addTag(
         playerTag.tagType,
@@ -7089,9 +7090,17 @@ export class SwapArenaTagsAttr extends MoveEffectAttr {
         playerTag.sourceId!,
         ArenaTagSide.ENEMY,
         true,
-      ); // TODO: is the bang correct?
+      );
+      // Preserve layers for entry hazards like Spikes and Toxic Spikes
+      if (playerTagLayers > 0) {
+        const newTag = globalScene.arena.getTagOnSide(playerTag.tagType, ArenaTagSide.ENEMY);
+        if (newTag instanceof EntryHazardTag) {
+          (newTag as Mutable<EntryHazardTag>).layers = playerTagLayers;
+        }
+      }
     }
     for (const enemyTag of tagEnemyTemp) {
+      const enemyTagLayers = enemyTag instanceof EntryHazardTag ? enemyTag.layers : 0;
       globalScene.arena.removeTagOnSide(enemyTag.tagType, ArenaTagSide.ENEMY, true);
       globalScene.arena.addTag(
         enemyTag.tagType,
@@ -7100,7 +7109,14 @@ export class SwapArenaTagsAttr extends MoveEffectAttr {
         enemyTag.sourceId!,
         ArenaTagSide.PLAYER,
         true,
-      ); // TODO: is the bang correct?
+      );
+      // Preserve layers for entry hazards like Spikes and Toxic Spikes
+      if (enemyTagLayers > 0) {
+        const newTag = globalScene.arena.getTagOnSide(enemyTag.tagType, ArenaTagSide.PLAYER);
+        if (newTag instanceof EntryHazardTag) {
+          (newTag as Mutable<EntryHazardTag>).layers = enemyTagLayers;
+        }
+      }
     }
 
     globalScene.phaseManager.queueMessage(
