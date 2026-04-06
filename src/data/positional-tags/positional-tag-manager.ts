@@ -53,4 +53,14 @@ export class PositionalTagManager {
     }
     this.tags = leftoverTags;
   }
+
+  /**
+   * Clear all {@linkcode PositionalTag}s from the arena.
+   * @remarks
+   * This should be called when starting a new battle to prevent tags like Future Sight
+   * from carrying over between battles.
+   */
+  public clearTags(): void {
+    this.tags = [];
+  }
 }
