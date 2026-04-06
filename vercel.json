@@ -1,4 +1,8 @@
 {
+  "buildCommand": "pnpm install --ignore-scripts && pnpm run build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "installCommand": "pnpm install --ignore-scripts",
   "rewrites": [
     {
       "source": "/api/(.*)",
